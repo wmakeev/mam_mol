@@ -8,10 +8,20 @@ namespace $ {
 
 			if( this._promise ) return this._promise
 			
-			return this._promise = new Promise( done => requestAnimationFrame( ()=> {
-				this._promise = null
-				done()
-			} ) )
+			return this._promise = new Promise( done => {
+				
+				const complete = ()=> {
+					this._promise = null
+					done()
+				}
+				
+				if( typeof requestAnimationFrame === 'function' ) {
+					requestAnimationFrame( complete )
+				} else {
+					setTimeout( complete, 16 )
+				}
+				
+			} )
 
 		}
 

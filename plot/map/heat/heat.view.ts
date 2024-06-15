@@ -1,4 +1,8 @@
 namespace $.$$ {
+	/**
+	 * Heat map graph.
+	 * @see https://mol.hyoo.ru/#!section=demos/demo=mol_plot_map_heat_demo
+	 */
 	export class $mol_plot_map_heat extends $.$mol_plot_map_heat {
 		
 		@ $mol_mem
@@ -23,7 +27,7 @@ namespace $.$$ {
 			return res
 		}
 		
-		@ $mol_mem
+		@ $mol_mem_key
 		level_opacity( level: number ) {
 			return String( level / this.levels().length )
 		}
@@ -39,7 +43,7 @@ namespace $.$$ {
 			return scale[1] / scale[0]
 		}
 		
-		@ $mol_mem
+		@ $mol_mem_key
 		level_hint( index: number ) {
 			return this.levels()[ index ].toLocaleString()
 		}

@@ -1,19 +1,6 @@
+#!/usr/bin/env node
 "use strict";
 var exports = void 0;
-"use strict"
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-	var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-	if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-	else for (var i = decorators.length - 1; i >= 0; i--) if ((d = decorators[i])) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-	return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-
-var globalThis = globalThis || ( typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : this )
-var $ = ( typeof module === 'object' ) ? Object.setPrototypeOf( module['export'+'s'] , globalThis ) : globalThis
-$.$$ = $
-
-;
 
 var $node = $node || {}
 void function( module ) { var exports = module.exports = this; function require( id ) { return $node[ id.replace( /^.\// , "../" ) ] }; 
@@ -24,10 +11,23 @@ var $;
 (function ($) {
 })($ || ($ = {}));
 module.exports = $;
-//mam.js.map
+
 ;
 
-$node[ "../mam" ] = $node[ "../mam.js" ] = module.exports }.call( {} , {} )
+$node[ "../mam.ts" ] = $node[ "../mam.ts" ] = module.exports }.call( {} , {} )
+;
+"use strict"
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	else for (var i = decorators.length - 1; i >= 0; i--) if ((d = decorators[i])) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+
+var $ = ( typeof module === 'object' ) ? ( module['export'+'s'] = globalThis ) : globalThis
+$.$$ = $
+
 ;
 "use strict";
 var $;
@@ -37,7 +37,7 @@ var $;
     }
     $.$mol_fail = $mol_fail;
 })($ || ($ = {}));
-//fail.js.map
+
 ;
 "use strict";
 var $;
@@ -54,7 +54,7 @@ var $;
                 });
             }
             const parts = '(' + this.rules.map(rule => rule.regExp.source).join(')|(') + ')';
-            this.regexp = RegExp(`([\\s\\S]*?)(?:(${parts})|$(?![^]))`, 'gm');
+            this.regexp = RegExp(`([\\s\\S]*?)(?:(${parts})|$(?![^]))`, 'gmu');
         }
         rules = [];
         regexp;
@@ -69,7 +69,7 @@ var $;
                     throw new Error('Empty token');
                 var prefix = found[1];
                 if (prefix)
-                    handle('', prefix, [], start);
+                    handle('', prefix, [prefix], start);
                 var suffix = found[2];
                 if (!suffix)
                     continue;
@@ -81,7 +81,7 @@ var $;
                     }
                     offset += rule.size + 1;
                 }
-                $.$mol_fail(new Error('$mol_syntax2 is broken'));
+                $mol_fail(new Error('$mol_syntax2 is broken'));
             }
         }
         parse(text, handlers) {
@@ -90,6 +90,6 @@ var $;
     }
     $.$mol_syntax2 = $mol_syntax2;
 })($ || ($ = {}));
-//syntax2.js.map
+
 
 //# sourceMappingURL=node.js.map

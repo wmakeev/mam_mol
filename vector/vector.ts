@@ -92,9 +92,20 @@ namespace $ {
 			return distance
 		}
 
+		transponed(
+			this : $mol_vector< $mol_vector< number, number >, Length > ,
+		): $mol_vector< $mol_vector< number, Length >, typeof this[0]['length'] > {
+			return this[0].map( ( _, i )=> this.map( row => row[i] ) )
+		}
+
 		get x() { return this[0] }
+		set x( next: Value ) { this[0] = next }
+		
 		get y() { return this[1] }
+		set y( next: Value ) { this[1] = next }
+		
 		get z() { return this[2] }
+		set z( next: Value ) { this[2] = next }
 		
 	}
 
@@ -106,11 +117,20 @@ namespace $ {
 
 	export class $mol_vector_range< Value > extends $mol_vector< Value , 2 > {
 		
-		get [0]() { return super[0] as Value }
-		get [1]() { return super[1] as Value }
+		0: Value
+		1: Value
+		
+		constructor( min: Value, max = min ) {
+			super( min, max )
+			this[0] = min
+			this[1] = max
+		}
 		
 		get min() { return this[0] }
+		set min( next: Value ) { this[0] = next }
+		
 		get max() { return this[1] }
+		set max( next: Value ) { this[1] = next }
 		
 		get inversed() {
 			return new ( this.constructor as typeof $mol_vector_range )( this.max , this.min )

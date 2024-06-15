@@ -1,5 +1,5 @@
-$mol_float_demo $mol_demo_large
-	title @ \Floating header example
+$mol_float_demo $mol_example_large
+	title \Floating header example
 	sub /
 		<= Scroll $mol_scroll
 			sub /
@@ -13,3 +13,8 @@ $mol_float_demo $mol_demo_large
 					rows /
 						<= Filler1 $mol_filler
 						<= Filler2 $mol_filler
+	tags /
+		\scroll
+		\container
+	aspects /
+		\Widget/Float

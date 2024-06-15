@@ -13,12 +13,12 @@ namespace $ {
 			return this.absolute( new URL( path , this.base ).toString() )
 		}
 
-		static base = $mol_dom_context.document
-			? new URL( '.' , $mol_dom_context.document.currentScript!['src'] ).toString()
+		static base = $mol_dom_context.document?.currentScript
+			? new URL( '.' , ($mol_dom_context.document.currentScript as any)['src'] ).toString()
 			: ''
 		
 		@ $mol_mem
-		buffer( next? : Uint8Array , force? : $mol_mem_force ) {
+		buffer( next? : Uint8Array ) {
 			if (next !== undefined) throw new Error(`Saving content not supported: ${this.path}`)
 
 			const response = $mol_fetch.response(this.path())
@@ -28,7 +28,7 @@ namespace $ {
 		}
 
 		@ $mol_mem
-		stat( next? : $mol_file_stat, force? : $mol_mem_force ) {
+		stat( next? : $mol_file_stat, virt?: 'virt' ) {
 			let stat = next
 			if (next === undefined) {
 				const content = this.text()
@@ -60,8 +60,12 @@ namespace $ {
 			return ( this.constructor as typeof $mol_file_web ).absolute( res )
 		}
 
-		ensure(next?: boolean): boolean {
+		ensure() {
 			throw new Error('$mol_file_web.ensure() not implemented')
+		} 
+
+		drop() {
+			throw new Error('$mol_file_web.drop() not implemented')
 		} 
 
 		@ $mol_mem

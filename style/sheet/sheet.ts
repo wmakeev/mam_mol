@@ -19,12 +19,14 @@ namespace $ {
 
 			const selector = ( prefix : string , path : string[] )=> {
 				if( path.length === 0 ) return prefix || `[${ block }]`
-				return `${ prefix ? prefix + ' ' : '' }[${ block }_${ path.join('_') }]`
+				let res = `[${ block }_${ path.join('_') }]`
+				if( prefix ) res =  prefix + ' :where(' + res + ')'
+				return res
 			}
 			
 			for( const key of Object.keys( config ).reverse() ) {
 
-				if( /^[a-z]/.test(key) ) {
+				if( /^(--)?[a-z]/.test(key) ) {
 					
 					const addProp = ( keys : string[] , val : any  )=> {
 
@@ -58,22 +60,22 @@ namespace $ {
 						
 					}
 
-					addProp( [ kebab(key) ] , config[key] )
+					addProp( [ kebab(key) ] , (config as any)[key] )
 
 				} else if( /^[A-Z]/.test(key) ) {
 
-					make_class( prefix , [ ... path , key.toLowerCase() ] , config[key] )
+					make_class( prefix , [ ... path , key.toLowerCase() ] , (config as any)[key] )
 
 				} else if( key[0] === '$' ) {
 
-					make_class( selector( prefix , path ) + ' [' + $mol_dom_qname( key ) + ']' , [] , config[key] )
+					make_class( selector( prefix , path ) + ' :where([' + $mol_dom_qname( key ) + '])' , [] , (config as any)[key] )
 
 				} else if( key === '>' ) {
 
 					const types = config[key] as any
 
 					for( let type in types ) {
-						make_class( selector( prefix , path ) + ' > [' + $mol_dom_qname( type ) + ']' , [] , types[type] )
+						make_class( selector( prefix , path ) + ' > :where([' + $mol_dom_qname( type ) + '])' , [] , types[type] )
 					}
 
 				} else if( key === '@' ) {
@@ -82,13 +84,13 @@ namespace $ {
 
 					for( let name in attrs ) {
 						for( let val in attrs[name] ) {
-							make_class( selector( prefix , path ) + '[' + name + '=' + JSON.stringify( val ) + ']' , [] , attrs[name][val] )
+							make_class( selector( prefix , path ) + ':where([' + name + '=' + JSON.stringify( val ) + '])' , [] , attrs[name][val] )
 						}
 					}
 
 				} else if( key === '@media' ) {
 
-					const media = config[key] as any
+					const media = (config as any)[key] as any
 
 					for( let query in media ) {
 
@@ -100,9 +102,18 @@ namespace $ {
 
 					}
 
+				} else if( key[0] === '[' && key[key.length-1] === ']' ) {
+
+					const attr = key.slice( 1, -1 )
+					const vals = config[ key as any ] as any as Record< string, any >
+					
+					for( let val in vals ) {
+						make_class( selector( prefix , path ) + ':where([' + attr + '=' + JSON.stringify( val ) + '])' , [] , vals[val] )
+					}
+				
 				} else {
 
-					make_class( selector( prefix , path ) + key , [] , config[key] )
+					make_class( selector( prefix , path ) + key , [] , (config as any)[key] )
 
 				}
 

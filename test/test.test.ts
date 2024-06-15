@@ -15,7 +15,7 @@ namespace $ {
 
 	export let $mol_test_mocks = [] as Array< ( context : $ )=> void >
 
-	export const $mol_test_all = [] as Array< ( context : $ )=> void >
+	export const $mol_test_all = [] as Array< ( context : $ )=> any >
 
 	export async function $mol_test_run() {
 
@@ -24,7 +24,14 @@ namespace $ {
 			let context = Object.create( $$ )
 			for( let mock of $mol_test_mocks ) await mock( context )
 			
-			await test( context )
+			const res = test( context )
+			if( $mol_promise_like( res ) ) {
+				await new Promise( ( done, fail )=> {
+					res.then( done, fail )
+					setTimeout( ()=> fail( new Error( 'Test timeout: ' + test.name ) ), 1000 )
+				} )
+			}
+			
 		}
 		
 		$$.$mol_log3_done({
@@ -45,13 +52,10 @@ namespace $ {
 			
 			scheduled = false
  			
-			try {
-				await $mol_test_run()
-			} finally {
-				$$.$mol_test_complete()
-			}
+			await $mol_test_run()
+			$$.$mol_test_complete()
 			
-		} , 0 )
+		} , 1000 )
 		
 	}
 
@@ -61,10 +65,10 @@ namespace $ {
 		context.Math = Object.create( Math )
 		context.Math.random = ()=> Math.sin( seed++ )
 
-		const forbidden = [ 'XMLHttpRequest' , 'fetch' ]
+		const forbidden = [ 'XMLHttpRequest' , 'fetch' ] as const
 
 		for( let api of forbidden ) {
-			context[ api ] = new Proxy( function(){} , {
+			context[ api ] = new Proxy( function(){} as any , {
 				get() {
 					$mol_fail_hidden( new Error( `${ api } is forbidden in tests` ) )
 				} ,

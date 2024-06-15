@@ -15,8 +15,6 @@
 }
 
 [mol_select_filter] {
-	z-index: 2;
-	opacity: 1 !important;
 	flex: 1 0 auto;
 	align-self: stretch;
 }
@@ -50,7 +48,7 @@
 }
 
 [mol_select_trigger] > * {
-	margin-right: -.75rem;
+	margin-right: -1rem;
 }
 
 [mol_select_trigger] > *:last-child {

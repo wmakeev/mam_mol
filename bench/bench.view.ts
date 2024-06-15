@@ -1,5 +1,9 @@
 namespace $.$$ {
 	
+	/**
+	 * Benchmark results visualizer.
+	 * @see https://mol.hyoo.ru/#!section=demos/demo=mol_bench_demo
+	 */
 	export class $mol_bench extends $.$mol_bench {
 		
 		@ $mol_mem
@@ -76,7 +80,7 @@ namespace $.$$ {
 		col_head_content( col : string ) {
 			return [
 				this.col_head_title( col ) ,
-				... ( this.col_sort() === col ) ? [ this.Col_head_sort( col ) ] : []
+				... ( this.col_sort() === col ) ? [ ' ', this.Col_head_sort( col ) ] : []
 			]
 		}
 		

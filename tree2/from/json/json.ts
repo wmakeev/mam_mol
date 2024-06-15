@@ -10,17 +10,26 @@ namespace $ {
 			return $mol_tree2.data( json , [], span )
 		}
 
+		if( typeof json.toJSON === 'function' ) {
+			return $mol_tree2_from_json( json.toJSON() )
+		}
+
 		if( Array.isArray( json ) ) {
 			const sub = json.map( json => $mol_tree2_from_json( json , span ) )
 			return new $mol_tree2( '/' , '', sub, span )
+		}
+		
+		if( ArrayBuffer.isView( json ) ) {
+			const buf = new Uint8Array( json.buffer, json.byteOffset, json.byteLength )
+			return $mol_tree2.data( String.fromCharCode( ... buf ) , [], span )
 		}
 			
 		if( json instanceof Date ) {
 			return new $mol_tree2( '', json.toISOString() , [] , span )
 		}
 
-		if( typeof json.toJSON === 'function' ) {
-			return $mol_tree2_from_json( json.toJSON() )
+		if( json.toString !== Object.prototype.toString ) {
+			return $mol_tree2.data( json.toString() , [], span )
 		}
 
 		if( json instanceof Error ) {

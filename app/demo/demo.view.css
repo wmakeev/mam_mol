@@ -1,25 +1,8 @@
-[mol_app_demo_menu] {
-	flex: 0 0 18rem;
-}
-
-[mol_app_demo_menu_list] {
-	display: flex;
-	padding: var(--mol_gap_block);
-}
-
-[mol_app_demo_menu_tools] {
-	padding: 0;
-}
 
 [mol_app_demo_main],
 [mol_app_demo_detail],
 [mol_app_empty_message] {
 	flex: 1000 0 40rem;
-}
-
-[mol_app_demo_menu_filter] {
-	align-self: stretch;
-	flex: 0 0 auto;
 }
 
 [mol_app_demo_nav_table] {
@@ -49,10 +32,6 @@
 	flex-grow: 1;
 }
 
-[mol_app_demo_menu_themes] {
-	flex: none;
-}
-
 [mol_app_demo_list] {
 	display: flex;
 	flex-wrap: wrap;
@@ -65,7 +44,6 @@
 }
 
 [mol_app_demo_detail_body] {
-	padding: var(--mol_gap_block);
 	display: flex;
 	align-items: stretch;
 	justify-content: flex-start;
@@ -105,5 +83,14 @@
 }
 
 [mol_app_demo_readme] {
-	flex: 1 0 30rem;
+	flex: 1 0 40rem;
+}
+
+[mol_app_demo_readme_not_found] {
+	display: flex;
+	flex: 1 0;
+	align-items: center;
+	justify-content: center;
+	font-size: 2rem;
+	color: var(--mol_theme_shade);
 }

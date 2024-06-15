@@ -1,7 +1,5 @@
 namespace $ {
-	export function $mol_view_tree2_to_text(this: $, tree2_module: $mol_tree2) {
-		const locales: $mol_view_tree2_locales = {}
-		const ts_module = this.$mol_view_tree2_ts_module(tree2_module, locales)
-		return ts_module
+	export function $mol_view_tree2_to_text( this: $, tree: $mol_tree2 ) {
+		return this.$mol_tree2_js_to_text( this.$mol_view_tree2_to_js( tree ) )
 	}
 }

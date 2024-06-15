@@ -1,6 +1,7 @@
 namespace $ {
 
 	export let $mol_jsx_prefix = ''
+	export let $mol_jsx_crumbs = ''
 
 	export let $mol_jsx_booked = null as null | Set< string >
 	
@@ -12,6 +13,12 @@ namespace $ {
 	
 	export const $mol_jsx_frag = ''
 
+	/**
+	 * JSX adapter that makes DOM tree.
+	 * Generates global unique ids for every DOM-element by components tree with ids.
+	 * Ensures all local ids are unique.
+	 * Can reuse an existing nodes by GUIDs when used inside [`mol_jsx_attach`](https://github.com/hyoo-ru/mam_mol/tree/master/jsx/attach).
+	 */
 	export function $mol_jsx<
 		Props extends $mol_jsx.JSX.IntrinsicAttributes,
 		Children extends Array< Node | string >
@@ -23,24 +30,67 @@ namespace $ {
 	) : Element | DocumentFragment {
 
 		const id = props && props.id || ''
-
+		const guid = id ? $mol_jsx_prefix ? $mol_jsx_prefix + '/'+ id : id : $mol_jsx_prefix
+		const crumbs_self = id ? $mol_jsx_crumbs.replace( /(\S+)/g, `$1_${ id.replace( /\/.*/i, '' ) }` ) : $mol_jsx_crumbs
+		
 		if( Elem && $mol_jsx_booked ) {
 			if( $mol_jsx_booked.has( id ) ) {
-				$mol_fail( new Error( `JSX already has tag with id ${ JSON.stringify( id ) }` ) )
+				$mol_fail( new Error( `JSX already has tag with id ${ JSON.stringify( guid ) }` ) )
 			} else {
 				$mol_jsx_booked.add( id )
 			}
 		}
 
-		const guid = $mol_jsx_prefix + id
-
 		let node: Element | DocumentFragment | null = guid ? $mol_jsx_document.getElementById( guid ) : null
+
+		if( $mol_jsx_prefix ) {
+			
+			const prefix_ext = $mol_jsx_prefix
+			const booked_ext = $mol_jsx_booked
+			const crumbs_ext = $mol_jsx_crumbs
+			
+			for( const field in props ) {
+				
+				const func = props[ field ]
+				if( typeof func !== 'function' ) continue
+				
+				
+				const wrapper = function( this: any, ... args: any[] ) {
+					
+					const prefix = $mol_jsx_prefix
+					const booked = $mol_jsx_booked
+					const crumbs = $mol_jsx_crumbs
+					
+					try {
+		
+						$mol_jsx_prefix = prefix_ext
+						$mol_jsx_booked = booked_ext
+						$mol_jsx_crumbs = crumbs_ext
+						
+						return func.call( this, ... args )
+						
+					} finally {
+						
+						$mol_jsx_prefix = prefix
+						$mol_jsx_booked = booked
+						$mol_jsx_crumbs = crumbs
+	
+					}
+					
+				}
+				
+				$mol_func_name_from( wrapper, func )
+				props[ field ] = wrapper as any
+				
+			}
+			
+		}
 
 		if( typeof Elem !== 'string' ) {
 
 			if( 'prototype' in Elem ) {
 
-				const view = node && node[ Elem as any ] || new ( Elem as any )
+				const view = node && (node as any)[ String(Elem) ] || new ( Elem as any )
 				
 				Object.assign( view , props )
 				view[ Symbol.toStringTag ] = guid
@@ -48,10 +98,11 @@ namespace $ {
 				view.childNodes = childNodes
 				
 				if( !view.ownerDocument ) view.ownerDocument = $mol_jsx_document
+				view.className = ( crumbs_self ? crumbs_self + ' ' : '' ) + ( Elem['name'] || Elem )
 				
 				node = view.valueOf()
 				
-				node![ Elem as any ] = view
+				;(node as any)![ String(Elem) ] = view
 				
 				return node!
 
@@ -59,11 +110,13 @@ namespace $ {
 
 				const prefix = $mol_jsx_prefix
 				const booked = $mol_jsx_booked
+				const crumbs = $mol_jsx_crumbs
 				
 				try {
 	
 					$mol_jsx_prefix = guid
 					$mol_jsx_booked = new Set
+					$mol_jsx_crumbs = ( crumbs_self ? crumbs_self + ' ' : '' ) + ( Elem['name'] || Elem )
 	
 					return ( Elem as any )( props , ... childNodes )
 					
@@ -71,6 +124,7 @@ namespace $ {
 
 					$mol_jsx_prefix = prefix
 					$mol_jsx_booked = booked
+					$mol_jsx_crumbs = crumbs
 	
 				}
 				
@@ -87,32 +141,35 @@ namespace $ {
 		$mol_dom_render_children( node , ( [] as ( Node | string )[] ).concat( ... childNodes ) )
 		if( !Elem ) return node
 
+		if( guid ) ( node as Element ).id = guid
 		for( const key in props ) {
-
+			if( key === 'id' ) continue
+			
 			if( typeof props[ key ] === 'string' ) {
-
-				;( node as Element ).setAttribute( key , props[ key as any ] )
-
+				
+				if( typeof (node as any)[ key ] === 'string' ) (node as any)[ key ] = props[ key ]
+				;( node as Element ).setAttribute( key , (props as any)[ key ] )
+				
 			} else if(
 				props[ key ] &&
 				typeof props[ key ] === 'object' &&
 				Reflect.getPrototypeOf( props[ key ] as any ) === Reflect.getPrototypeOf({})
 			) {
 
-				if( typeof node[ key as any ] === 'object' ) {
+				if( typeof (node as any)[ key ] === 'object' ) {
 					Object.assign( ( node as any )[ key ] , props[ key ] )
 					continue
 				}
 
 			} else {
 
-				node[ key as any ] = props[ key ]
+				(node as any)[ key ] = props[ key ]
 				
 			}
 
 		}
 
-		if( guid ) ( node as Element ).id = guid
+		if( $mol_jsx_crumbs ) ( node as Element ).className = ( (props as any)?.['class'] ? (props as any)['class'] + ' ' : '' ) + crumbs_self
 
 		return node
 

@@ -7,35 +7,52 @@ namespace $ {
 					
 		class Component extends HTMLElement {
 			
-			view = new View
-			static tag = View.name.replace( /\W/g , '' ).replace( /^(?=\d+)/ , '-' ).replace( /_/g , '-' )
-			auto?: $mol_atom2 | undefined
+			static tag = $$.$mol_func_name( View ).replace( /\W/g , '' ).replace( /^(?=\d+)/ , '-' ).replace( /_/g , '-' )
+			static observedAttributes = new Set
 			
+			view = new View
+			root?: $mol_wire_sub | null
+			
+			@ $mol_mem
 			connectedCallback() {
 				
 				if( !this.shadowRoot ) {
 					this.attachShadow({ mode: 'open' })
 					
-					this.shadowRoot!.append(
-						document.getElementById( `$mol_style_attach` )!.cloneNode( true ),
-						this.view.dom_node(),
-					)
+					const node = this.view.dom_node()
+					node.setAttribute( 'mol_view_root', '' )
+					
+					for( const style of $mol_dom_context.document.getElementsByTagName( 'style' )  ) {
+						this.shadowRoot!.append( style.cloneNode( true ) )
+					}
+					
+					this.shadowRoot!.append( node )
 					
 				}
 				
-				this.auto = $mol_atom2_autorun( ()=> this.view.dom_tree() )	
+				this.root = $mol_wire_auto()
+				
+				try {
+					this.view.dom_tree()
+				} catch( error: unknown ) {
+					if( $mol_promise_like( error ) ) return
+					$mol_fail_hidden( error )
+				}
+				
 			}
 			
 			disconnectedCallback() {
-				this.auto!.destructor()
-				this.auto = undefined
+				this.root!.destructor()
+				this.root = undefined
 			}
 			
-			attributeChangedCallback( name: string, prev: string, next: string ) {
-				this.view[ name ]( JSON.parse( next ) )
+			attributeChangedCallback( name: keyof this, prev: string, next: string ) {
+				( this.view as any )[ name ]( JSON.parse( next ) )
 			}
 			
-			static observedAttributes = new Set
+			toString() {
+				return '<' + ( this.constructor as typeof Component ).tag + '#' + this.id + '/>'
+			}
 			
 		}
 		
@@ -49,7 +66,7 @@ namespace $ {
 				const descr = Reflect.getOwnPropertyDescriptor( proto, field )!
 				
 				if( typeof descr.value !== 'function' ) continue
-				if( descr.value.length === 0 ) continue
+				// if( descr.value.length === 0 ) continue
 				
 				Component.observedAttributes.add( field )
 			}
@@ -61,6 +78,7 @@ namespace $ {
 
 		customElements.define( Component.tag, Component )
 		
+		return Component
 	}
 
 }

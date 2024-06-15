@@ -1,15 +1,29 @@
 namespace $.$$ {
 
+	/**
+	 * Root component for adaptivity to various screen sizes. Implements booklet UX.
+	 * @see https://mol.hyoo.ru/#!section=demos/demo=mol_book2_demo
+	 */
 	export class $mol_book2 extends $.$mol_book2 {
 		
 		title() {
-			return this.pages().map( page => page?.title() ).reverse().filter( Boolean ).join( ' | ' )
+			return this.pages().map( page => {
+				try {
+					return page?.title()
+				} catch( error ) {
+					$mol_fail_log( error )
+				}
+			} ).reverse().filter( Boolean ).join( ' | ' )
+		}
+		
+		menu_title() {
+			return this.pages()[0]?.title() || this.title()
 		}
 
 		@ $mol_mem
 		sub() {
 			
-			const next = [  ... this.pages().slice(),this.Placeholder() ]
+			const next = [  ... this.pages(), this.Placeholder() ]
 			
 			const prev = $mol_mem_cached( ()=> this.sub() ) ?? []
 			
@@ -22,12 +36,22 @@ namespace $.$$ {
 
 				if( p === n ) continue
 
-				new $mol_after_timeout( 100,()=> n.dom_node().scrollIntoView({ behavior : 'smooth' }) )
+				n.bring()
+				
 				break
 
 			}
 
 			return next as readonly $mol_view[]
+		}
+		
+		bring() {
+			
+			const pages = this.pages()
+			
+			if( pages.length ) pages[ pages.length - 1 ].bring()
+			else super.bring()
+			
 		}
 
 	}

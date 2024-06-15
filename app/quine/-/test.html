@@ -4,23 +4,17 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
 
-<script src="web.js"></script>
-
 <body mol_view_root="$mol_app_quine">
 
-				<script src="/mol/build/client/client.js" charset="utf-8"></script>
-				<script>
-					setTimeout( ()=> {
+<script src="web.js"></script>
 
-						const test = document.createElement( 'script' )
-						test.src = 'web.test.js'
-						
+				<script src="/mol/build/client/client.js" charset="utf-8"></script>
+				<script src="web.test.js" charset="utf-8"></script>
+				<script>
+					addEventListener( 'load', ()=> setTimeout( ()=> {
 						const audit =  document.createElement( 'script' )
 						audit.src = 'web.audit.js'
-						
-						test.onload = ()=> document.head.appendChild( audit )
-						document.head.appendChild( test )
-
-					}, 250 )
+						document.head.appendChild( audit )
+					}, 500 ) )
 				</script>
 				

@@ -1,4 +1,9 @@
 namespace $.$$ {
+
+	/**
+	 * Output text with dimmed mismatched substrings.
+	 * @see https://mol.hyoo.ru/#!section=demos/demo=mol_dimmer_demo
+	 */
 	export class $mol_dimmer extends $.$mol_dimmer {
 		
 		parts() {
@@ -19,8 +24,13 @@ namespace $.$$ {
 		
 		@ $mol_mem
 		strings() {
-			const variants = { ... this.needle().split( /\s+/g ).filter( Boolean ) } as Record< number, string >
+			
+			const options = this.needle().split( /\s+/g ).filter( Boolean )
+			if( !options.length ) return [ this.haystack() ]
+			
+			const variants = { ... options } as Record< number, string >
 			const regexp = $mol_regexp.from( { needle: variants } , { ignoreCase: true } )
+			
 			return this.haystack().split( regexp )
 		}
 		

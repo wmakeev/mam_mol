@@ -12,7 +12,8 @@ namespace $ {
 
 	export class $mol_file_not_found extends Error {}
 
-	export abstract class $mol_file extends $mol_object {		
+	export abstract class $mol_file extends $mol_object {
+			
 		@ $mol_mem_key
 		static absolute( path : string ): $mol_file {
 			throw new Error( 'Not implemented yet' )
@@ -22,6 +23,8 @@ namespace $ {
 			throw new Error( 'Not implemented yet' )
 		}
 		
+		static base = ''
+		
 		path() {
 			return '.'
 		}
@@ -30,11 +33,11 @@ namespace $ {
 			return this.resolve( '..' )
 		}
 
-		abstract stat( next? : $mol_file_stat, force? : $mol_mem_force ): $mol_file_stat
+		abstract stat( next? : $mol_file_stat | null, virt?: 'virt' ): $mol_file_stat | null
 
 		reset(): void {
 			try {
-				this.stat(undefined, $mol_mem_force_cache)
+				this.stat( null )
 			} catch( error: any ) {
 				if (error instanceof $mol_file_not_found) return
 				return $mol_fail_hidden(error)
@@ -42,10 +45,11 @@ namespace $ {
 		}
 		
 		version() {
-			return this.stat().mtime.getTime().toString( 36 ).toUpperCase()
+			return this.stat()?.mtime.getTime().toString( 36 ).toUpperCase() ?? ''
 		}
 
-		abstract ensure(next?: boolean): boolean
+		abstract ensure(): void
+		abstract drop(): void
 
 		watcher() {
 			console.warn('$mol_file_web.watcher() not implemented')
@@ -56,33 +60,26 @@ namespace $ {
 		}
 		
 		@ $mol_mem
-		exists( next? : boolean , force? : $mol_mem_force ) {
-
-			let exists = true
-			try {
-				this.stat()
-			} catch( error: any ) {
-
-				if (error instanceof $mol_file_not_found) {
-					exists = false
-				} else {
-					return $mol_fail_hidden(error)
-				}
-				
-			}
+		exists( next? : boolean ) {
+			
+			let exists = Boolean( this.stat() )
 
 			if( next === undefined ) return exists
 			if( next === exists ) return exists
 
-			if( next ) this.parent().exists( true )
-			this.ensure(next)
+			if( next ) {
+				this.parent().exists( true )
+				this.ensure()
+			} else {
+				this.drop()
+			}
 			this.reset()
 			
 			return next
 		}
 		
 		type() {
-			return this.stat().type
+			return this.stat()?.type ?? ''
 		}
 		
 		name() {
@@ -94,41 +91,30 @@ namespace $ {
 			return match ? match[ 1 ].substring( 1 ) : ''
 		}
 
-		abstract buffer( next? : Uint8Array , force? : $mol_mem_force ): Uint8Array
+		abstract buffer( next? : Uint8Array ): Uint8Array
 
-		text(next?: string, force?: $mol_mem_force) {
+		@ $mol_mem
+		text(next?: string, virt?: 'virt') {
+			if( virt ) {
+				const now = new Date
+				this.stat( {
+					type: 'file',
+					size: 0,
+					atime: now,
+					mtime: now,
+					ctime: now,			
+				}, 'virt' )
+				return next!
+			}
 			if( next === undefined ) {
-				return $mol_charset_decode( this.buffer( undefined, force ) )	
+				return $mol_charset_decode( this.buffer( undefined ) )	
 			} else {
 				const buffer = next === undefined ? undefined : $mol_charset_encode( next )
-				this.buffer( buffer, force )
+				this.buffer( buffer )
 				return next
 			}
 		}
 
-		fail(error: Error) {
-			this.buffer(error as any, $mol_mem_force_fail)
-			this.stat(error as any, $mol_mem_force_fail)
-		}
-
-		buffer_cached(buffer: Uint8Array) {
-			const ctime = new Date()
-			const stat: $mol_file_stat = {
-				type: 'file',
-				size: buffer.length,
-				ctime,
-				atime: ctime,
-				mtime: ctime
-			}
-
-			this.buffer(buffer, $mol_mem_force_cache)
-			this.stat(stat , $mol_mem_force_cache)
-		}
-
-		text_cached(content: string) {
-			this.buffer_cached($mol_charset_encode(content))
-		}
-		
 		abstract sub(): $mol_file[]
 
 		abstract resolve(path: string): $mol_file
@@ -162,9 +148,17 @@ namespace $ {
 
 		size() {
 			switch( this.type() ) {
-				case 'file': return this.stat().size
+				case 'file': return this.stat()?.size ?? 0
 				default: return 0
 			}
+		}
+		
+		open( ... modes: readonly ( 'create' | 'exists_truncate' | 'exists_fail' | 'read_only' | 'write_only' | 'read_write' | 'append' )[] ) {
+			return 0
+		}
+		
+		toJSON() {
+			return this.path()
 		}
 		
 	}

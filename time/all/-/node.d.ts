@@ -38,12 +38,14 @@ declare namespace $ {
         readonly hour: number;
         readonly minute: number;
         readonly second: number;
+        get normal(): $mol_time_duration;
         summ(config: $mol_time_duration_config): $mol_time_duration;
         mult(numb: number): $mol_time_duration;
         count(config: $mol_time_duration_config): number;
         valueOf(): number;
         toJSON(): string;
         toString(pattern?: string): string;
+        [Symbol.toPrimitive](mode: 'default' | 'number' | 'string'): string | number;
         static patterns: {
             '#Y': (duration: $mol_time_duration) => string;
             '#M': (duration: $mol_time_duration) => string;
@@ -51,12 +53,50 @@ declare namespace $ {
             '#h': (duration: $mol_time_duration) => string;
             '#m': (duration: $mol_time_duration) => string;
             '#s': (duration: $mol_time_duration) => string;
+            hh: (moment: $mol_time_moment) => string;
+            h: (moment: $mol_time_moment) => string;
+            ':mm': (moment: $mol_time_moment) => string;
+            mm: (moment: $mol_time_moment) => string;
+            m: (moment: $mol_time_moment) => string;
+            ':ss': (moment: $mol_time_moment) => string;
+            ss: (moment: $mol_time_moment) => string;
+            s: (moment: $mol_time_moment) => string;
+            '.sss': (moment: $mol_time_moment) => string;
+            sss: (moment: $mol_time_moment) => string;
         };
     }
 }
 
 declare namespace $ {
     function $mol_fail(error: any): never;
+}
+
+declare namespace $ {
+    function $mol_dev_format_register(config: {
+        header: (val: any, config: any) => any;
+        hasBody: (val: any, config: any) => false;
+    } | {
+        header: (val: any, config: any) => any;
+        hasBody: (val: any, config: any) => boolean;
+        body: (val: any, config: any) => any;
+    }): void;
+    let $mol_dev_format_head: symbol;
+    let $mol_dev_format_body: symbol;
+    function $mol_dev_format_native(obj: any): any[];
+    function $mol_dev_format_auto(obj: any): any[];
+    function $mol_dev_format_element(element: string, style: object, ...content: any[]): any[];
+    function $mol_dev_format_span(style: object, ...content: any[]): any[];
+    let $mol_dev_format_div: (style: object, ...content: any[]) => any[];
+    let $mol_dev_format_ol: (style: object, ...content: any[]) => any[];
+    let $mol_dev_format_li: (style: object, ...content: any[]) => any[];
+    let $mol_dev_format_table: (style: object, ...content: any[]) => any[];
+    let $mol_dev_format_tr: (style: object, ...content: any[]) => any[];
+    let $mol_dev_format_td: (style: object, ...content: any[]) => any[];
+    let $mol_dev_format_accent: (...args: any[]) => any[];
+    let $mol_dev_format_strong: (...args: any[]) => any[];
+    let $mol_dev_format_string: (...args: any[]) => any[];
+    let $mol_dev_format_shade: (...args: any[]) => any[];
+    let $mol_dev_format_indent: (...args: any[]) => any[];
 }
 
 declare namespace $ {
@@ -95,10 +135,11 @@ declare namespace $ {
         merge(config: $mol_time_moment_config): $mol_time_moment;
         shift(config: $mol_time_duration_config): $mol_time_moment;
         mask(config: $mol_time_moment_config): $mol_time_moment;
-        toOffset(config: $mol_time_duration_config): $mol_time_moment;
+        toOffset(config?: $mol_time_duration_config): $mol_time_moment;
         valueOf(): number;
         toJSON(): string;
         toString(pattern?: string): string;
+        [Symbol.toPrimitive](mode: 'default' | 'number' | 'string'): string | number;
         static patterns: {
             YYYY: (moment: $mol_time_moment) => string;
             AD: (moment: $mol_time_moment) => string;
@@ -149,7 +190,9 @@ declare namespace $ {
         get duration(): $mol_time_duration;
         toJSON(): string;
         toString(): string;
+        [Symbol.toPrimitive](mode: 'default' | 'number' | 'string'): string;
     }
 }
 
 export = $;
+//# sourceMappingURL=node.d.ts.map

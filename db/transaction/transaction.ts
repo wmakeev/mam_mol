@@ -20,7 +20,9 @@ namespace $ {
 				{
 					ownKeys: ()=> [ ... this.native.objectStoreNames ],
 					has: ( _, name: string )=> this.native.objectStoreNames.contains( name ),
-					get: ( _, name: string )=> new $mol_db_store( this.native.objectStore( name ) ),
+					get: ( _, name: string, proxy )=> ( name in proxy )
+						? new $mol_db_store( this.native.objectStore( name ) )
+						: undefined,
 				},
 			)
 		}
@@ -38,13 +40,14 @@ namespace $ {
 		
 		/** Instant abort transaction. Any errors aborts transactions automatically. */
 		abort() {
+			if( this.native.error ) return
 			this.native.abort()
 		}
 		
 		/** Instant commits transaction. Without errors commit proceed automatically later. */
 		commit() {
 			
-			this.native.commit()
+			this.native.commit?.()
 			
 			return new Promise< void >( ( done, fail )=> {
 				this.native.onerror = ()=> fail( new Error( this.native.error!.message ) )

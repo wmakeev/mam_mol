@@ -1,5 +1,5 @@
-$mol_scroll_demo $mol_demo_large
-	title @ \Simple scroll pane
+$mol_scroll_demo $mol_example_large
+	title \Simple scroll pane
 	sub /
 		<= Scroll $mol_scroll
 			sub /
@@ -14,3 +14,8 @@ $mol_scroll_demo $mol_demo_large
 					<= Filler7 $mol_filler
 					<= Filler8 $mol_filler
 					<= Filler9 $mol_filler
+	tags /
+		\scroll
+		\container
+	aspects /
+		\Widget/Scroll

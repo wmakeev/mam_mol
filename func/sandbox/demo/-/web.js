@@ -1,19 +1,6 @@
+#!/usr/bin/env node
 "use strict";
 function require( path ){ return $node[ path ] };
-"use strict"
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-	var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-	if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-	else for (var i = decorators.length - 1; i >= 0; i--) if ((d = decorators[i])) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-	return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-
-var globalThis = globalThis || ( typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : this )
-var $ = ( typeof module === 'object' ) ? Object.setPrototypeOf( module['export'+'s'] , globalThis ) : globalThis
-$.$$ = $
-
-;
 
 var $node = $node || {}
 void function( module ) { var exports = module.exports = this; function require( id ) { return $node[ id.replace( /^.\// , "../" ) ] }; 
@@ -24,23 +11,36 @@ var $;
 (function ($) {
 })($ || ($ = {}));
 module.exports = $;
-//mam.js.map
+
 ;
 
-$node[ "../mam" ] = $node[ "../mam.js" ] = module.exports }.call( {} , {} )
+$node[ "../mam.ts" ] = $node[ "../mam.ts" ] = module.exports }.call( {} , {} )
+;
+"use strict"
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	else for (var i = decorators.length - 1; i >= 0; i--) if ((d = decorators[i])) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+
+var $ = ( typeof module === 'object' ) ? ( module['export'+'s'] = globalThis ) : globalThis
+$.$$ = $
+
 ;
 "use strict";
 var $;
 (function ($) {
 })($ || ($ = {}));
-//context.js.map
+
 ;
 "use strict";
 var $;
 (function ($) {
     $.$mol_dom_context = self;
 })($ || ($ = {}));
-//context.web.js.map
+
 ;
 "use strict";
 var $;
@@ -60,9 +60,9 @@ var $;
         static get make() {
             if (this._make)
                 return this._make;
-            const frame = $.$mol_dom_context.document.createElement('iframe');
+            const frame = $mol_dom_context.document.createElement('iframe');
             frame.style.display = 'none';
-            $.$mol_dom_context.document.body.appendChild(frame);
+            $mol_dom_context.document.body.appendChild(frame);
             const win = frame.contentWindow;
             const SafeFunc = win.Function;
             const SafeJSON = win.JSON;
@@ -91,7 +91,7 @@ var $;
 				for( const key of Object.getOwnPropertyNames( window ) ) delete window[ key ]
 
 			`);
-            $.$mol_dom_context.document.body.removeChild(frame);
+            $mol_dom_context.document.body.removeChild(frame);
             let context_default = {};
             function clean(obj) {
                 for (let name of Object.getOwnPropertyNames(obj)) {
@@ -177,6 +177,6 @@ var $;
     }
     $.$mol_func_sandbox = $mol_func_sandbox;
 })($ || ($ = {}));
-//sandbox.js.map
+
 
 //# sourceMappingURL=web.js.map

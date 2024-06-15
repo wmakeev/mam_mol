@@ -68,6 +68,34 @@ namespace $ {
 			$mol_assert_equal( sheet , '[mol_style_sheet_test] {\n\tflex-grow: 5;\n}\n' )
 			
 		},
+		
+		'custom properties'() {
+		
+			class $mol_style_sheet_test extends $mol_view {}
+
+			const sheet = $mol_style_sheet( $mol_style_sheet_test , {
+				'--isVariable': 'yes',
+			} )
+
+			$mol_assert_equal( sheet , '[mol_style_sheet_test] {\n\t--is-variable: yes;\n}\n' )
+			
+		},
+		
+		'custom property groups'() {
+			
+			class $mol_style_sheet_test extends $mol_view {}
+
+			const { px } = $mol_style_unit
+
+			const sheet = $mol_style_sheet( $mol_style_sheet_test , {
+				'--variable' : {
+					test : px(5)
+				}
+			} )
+
+			$mol_assert_equal( sheet , '[mol_style_sheet_test] {\n\t--variable-test: 5px;\n}\n' )
+			
+		},
 
 		'property shorthand'() {
 		
@@ -199,7 +227,7 @@ namespace $ {
 				},
 			} )
 
-			$mol_assert_equal( sheet , '[mol_style_sheet_test][mol_theme="$mol_theme_dark"] {\n\tcolor: red;\n\tdisplay: block;\n}\n' )
+			$mol_assert_equal( sheet , '[mol_style_sheet_test]:where([mol_theme="$mol_theme_dark"]) {\n\tcolor: red;\n\tdisplay: block;\n}\n' )
 			
 		},
 
@@ -256,7 +284,7 @@ namespace $ {
 				},
 			} )
 
-			$mol_assert_equal( sheet , '[mol_style_sheet_test][mol_theme="$mol_theme_dark"] [mol_style_sheet_test_item] {\n\tcolor: red;\n}\n' )
+			$mol_assert_equal( sheet , '[mol_style_sheet_test]:where([mol_theme="$mol_theme_dark"]) :where([mol_style_sheet_test_item]) {\n\tcolor: red;\n}\n' )
 			
 		},
 
@@ -269,7 +297,7 @@ namespace $ {
 				},
 			} )
 
-			$mol_assert_equal( sheet , '[mol_style_sheet_test2] [mol_style_sheet_test1] {\n\tcolor: red;\n\tdisplay: block;\n}\n' )
+			$mol_assert_equal( sheet , '[mol_style_sheet_test2] :where([mol_style_sheet_test1]) {\n\tcolor: red;\n\tdisplay: block;\n}\n' )
 			
 		},
 
@@ -284,7 +312,7 @@ namespace $ {
 				},
 			} )
 
-			$mol_assert_equal( sheet , '[mol_style_sheet_test2] > [mol_style_sheet_test1] {\n\tcolor: red;\n\tdisplay: block;\n}\n' )
+			$mol_assert_equal( sheet , '[mol_style_sheet_test2] > :where([mol_style_sheet_test1]) {\n\tcolor: red;\n\tdisplay: block;\n}\n' )
 			
 		},
 

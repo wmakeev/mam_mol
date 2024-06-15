@@ -7,19 +7,19 @@ Plugin which adds handlers for keyboard keys.
 plugins /
 	<= Hotkey $mol_hotkey
 		key *
-			escape?val <=> clear?val null
-			enter?val <=> submit?val null
+			escape? <=> clear? null
+			enter? <=> submit? null
 ```
 
 ## Properties
 
 **`key(): { [ key in keyof typeof $mol_keyboard_code ]? : ( event : KeyboardCode )=> void }`**
 
-Handlers dictionary. See [$mol_keyboard_code](https://github.com/eigenmethod/mol/blob/master/keyboard/code.ts) for key names.
+Handlers dictionary. See [$mol_keyboard_code](https://github.com/eigenmethod/mol/blob/master/keyboard/code/code.ts) for key names.
 
 ## Modifiers
 
-If true than check for same key are pressed.
+If true then check for same key are pressed.
 
 **`mod_ctrl() : boolean`**
 

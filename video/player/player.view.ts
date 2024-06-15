@@ -1,12 +1,17 @@
 namespace $.$$ {
+
+	/**
+	 * Video player component
+	 * @see https://mol.hyoo.ru/#!section=demos/demo=mol_video_player_demo
+	 */
 	export class $mol_video_player extends $.$mol_video_player {
 		
-		dom_node() {
+		override dom_node() {
 			return super.dom_node() as HTMLVideoElement
 		}
 		
 		@ $mol_mem
-		volume( next?: number ) {
+		override volume( next?: number ) {
 			
 			this.revolume()
 			
@@ -19,7 +24,7 @@ namespace $.$$ {
 		}
 		
 		@ $mol_mem
-		time( next?: number ) {
+		override time( next?: number ) {
 			
 			this.retime()
 			
@@ -32,30 +37,30 @@ namespace $.$$ {
 		}
 		
 		@ $mol_mem
-		duration() {
+		override duration() {
 			this.redurate()
 			return this.dom_node().duration
 		}
 		
 		@ $mol_mem
-		playing( next?: boolean ) {
-			if( next === undefined ) {
-				return false
-			} else {
-				if( next ) {
-					this.dom_node().play()
-				} else {
-					this.dom_node().pause()
-				}
-				return next
-			}
+		override playing( next?: boolean ) {
+			const node = this.dom_node()
+			this.playing_event()
+			this.play_event()
+
+			if( next === undefined ) return ! node.paused
+
+			if( next && node.paused) $mol_wire_sync(node).play()
+			if (! next && ! node.paused) node.pause()
+
+			return ! node.paused
 		}
 		
-		play() {
+		override play() {
 			this.playing( true )
 		}
 		
-		pause() {
+		override pause() {
 			this.playing( false )
 		}
 		

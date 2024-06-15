@@ -1,4 +1,9 @@
 namespace $.$$ {
+
+	/**
+	 * Allow user to select value from various options and displays current value.
+	 * @see https://mol.hyoo.ru/#!section=demos/demo=mol_select_demo_colors
+	 */
 	export class $mol_select extends $.$mol_select {
 		
 		@ $mol_mem
@@ -30,7 +35,7 @@ namespace $.$$ {
 		
 		option_label( id : string ) {
 			const value = this.dictionary()[ id ]
-			return value == null ? id : value
+			return (value == null ? id : value) || this.option_label_default()
 		}
 		
 		option_rows() {
@@ -56,7 +61,7 @@ namespace $.$$ {
 
 		event_select( id : string , event? : MouseEvent ) {
 			this.value( id )
-			this.focused( false )
+			this.showed( false )
 			event?.preventDefault()
 		}
 		
@@ -71,7 +76,7 @@ namespace $.$$ {
 		trigger_content() {
 			return [
 				... this.option_content( this.value() ),
-				... !this.value() ? [ this.Trigger_icon() ] : [],
+				this.Trigger_icon(),
 			] as readonly $mol_view_content[]
 		}
 		

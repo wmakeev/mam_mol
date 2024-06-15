@@ -1,7 +1,16 @@
-$mol_date_demo $mol_view
+$mol_date_demo $mol_example_small
 	sub /
-		<= Date $mol_date
-			value_moment?val <=> date?val $mol_time_moment
+		<= Current $mol_date
+			value_moment? <=> date_current? $mol_time_moment
 		<= Formatted $mol_view
 			sub /
 				<= formatted \
+		<= Empty $mol_date
+			value_moment? <=> date_empty? null
+	tags /
+		\time
+		\datepicker
+		\format
+	aspects /
+		\Widget/Control/Button/Picker
+		\Type/Date

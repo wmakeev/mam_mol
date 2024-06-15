@@ -1,38 +1,43 @@
 namespace $ {
 
-	export class $mol_error_mix extends Error {
+	export class $mol_error_mix< Cause extends {} = {} > extends AggregateError {
+		
+		name = $$.$mol_func_name( this.constructor ).replace( /^\$/, '' ) + '_Error'
 
-		errors : Error[]
-
-		constructor( message : string , ... errors : Error[] ) {
-
-			super( message )
+		constructor(
+			message: string,
+			readonly cause = {} as Cause,
+			... errors: Error[]
+		) {
 			
-			this.errors = errors
-
-			if( errors.length ) {
-
-				const stacks = [ ... errors.map( error => error.stack ) , this.stack ]
-				
-				const diff = $mol_diff_path( ... stacks.map( stack => {
-					if( !stack ) return []
-					return stack.split( '\n' ).reverse()
-				} ) )
-				
-				const head = diff.prefix.reverse().join( '\n' )
-				const tails = diff.suffix.map( path => path.reverse().map( line => line.replace( /^(?!\s+at)/ , '\tat (.) ' ) ).join( '\n' ) ).join( '\n\tat (.) -----\n' )
-
-				this.stack = `Error: ${ this.constructor.name }\n\tat (.) /"""\\\n${ tails }\n\tat (.) \\___/\n${ head }`
-				this.message += errors.map( error => '\n' + error.message ).join( '' )
-
-			}
-
+			super( errors, message, { cause } )
+			
+			const stack_get = Object.getOwnPropertyDescriptor( this, 'stack' )?.get ?? ( ()=> super.stack )
+			
+			Object.defineProperty( this, 'stack', {
+				get: ()=> ( stack_get.call( this ) ?? this.message ) + '\n' + [ JSON.stringify( this.cause, null, '  ' ) ?? 'no cause', ... this.errors.map( e => e.stack ) ].map(
+					e => e.trim()
+						.replace( /at /gm, '   at ' )
+						.replace( /^(?!    +at )(.*)/gm, '    at | $1 (#)' )
+				).join('\n')
+			} )
+			
 		}
 
-		toJSON() {
-			return this.message
+		static [ Symbol.toPrimitive ]() {
+			return this.toString()
+		}
+		
+		static toString() {
+			return $$.$mol_func_name( this )
 		}
 
+		static make(
+			...params: ConstructorParameters<typeof $mol_error_mix>
+		) {
+			return new this(...params)
+		}
+		
 	}
 
 }

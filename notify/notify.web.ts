@@ -1,5 +1,6 @@
 namespace $ {
 	
+	/** Manages system notifications. Notifications of same context are auto joined to one notification. */
 	export class $mol_notify {
 		
 		@ $mol_mem
@@ -10,18 +11,20 @@ namespace $ {
 			
 			if( perm === 'granted' ) return true
 			
-			perm = $mol_fiber_sync( ()=>
-				new Promise< NotificationPermission >( done =>
-					Notification.requestPermission( perm => {
-						done( perm )
-					} )
-				)
-			)()
+			perm = $mol_wire_sync( this ).request_permissions()
 			
 			return perm === 'granted'
 		}
 		
-		@ $mol_fiber.method
+		static async request_permissions() {
+			return new Promise< NotificationPermission >( done =>
+				Notification.requestPermission( perm => {
+					done( perm )
+				} )
+			)
+		}
+		
+		@ $mol_action
 		static show( info: {
 			context: string,
 			message: string,
@@ -49,15 +52,15 @@ namespace $ {
 				not.close()
 			}
 			
-			const vibrate = [ 100, 200, 300, 400, 500 ]
+			// const vibrate = [ 100, 200, 300, 400, 500 ]
 			
-			await $mol_service().showNotification( title, { body, data, vibrate, tag } )
+			await $mol_service().showNotification( title, { body, data, /*vibrate,*/ tag } )
 			
 		} )
 		
 		self.addEventListener( 'notificationclick', $mol_service_handler( async ( event: any )=> {
 			
-			const clients: any[] = await self['clients'].matchAll({ includeUncontrolled: true })
+			const clients: any[] = await ( self as any ).clients.matchAll({ includeUncontrolled: true })
 			event.notification.close()
 
 			if( clients.length ) {
@@ -68,7 +71,7 @@ namespace $ {
 				
 			} else {
 				
-				await self['clients'].openWindow( event.notification.data )
+				await ( self as any ).clients.openWindow( event.notification.data )
 				
 			}
 			

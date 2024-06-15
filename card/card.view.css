@@ -1,11 +1,13 @@
 [mol_card] {
-	box-shadow: 0 0 0 1px var(--mol_theme_line);
-	background: var(--mol_theme_back);
+	background: var(--mol_theme_card);
 	color: var(--mol_theme_text);
 	border-radius: var(--mol_gap_round);
 	display: flex;
 	flex: 0 1 auto;
 	flex-direction: column;
+	position: relative;
+	box-shadow: 0 0 0.5rem 0rem hsla(0,0%,0%,.125);
+	/* overflow: hidden; */
 }
 
 [mol_card_content] {

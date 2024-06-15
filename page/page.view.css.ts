@@ -1,12 +1,11 @@
 namespace $.$$ {
 
 	const { per , rem } = $mol_style_unit
-	const { calc } = $mol_style_func
+	const { hsla } = $mol_style_func
 
 	$mol_style_define( $mol_page , {
 
 		display: 'flex' ,
-		margin: 0 ,
 		flex: {
 			basis: 'auto' ,
 			direction: 'column' ,
@@ -16,12 +15,9 @@ namespace $.$$ {
 		maxWidth: per(100) ,
 		maxHeight: per(100) ,
 		boxSizing: 'border-box' ,
-		background: {
-			color: $mol_theme.back ,
-		},
 		color: $mol_theme.text ,
 		// zIndex: 0 ,
-
+		
 		':focus': {
 			outline: 'none',
 		} ,
@@ -36,12 +32,14 @@ namespace $.$$ {
 			minHeight: rem(4),
 			padding: $mol_gap.block ,
 			background: {
-				color: $mol_theme.back ,
+				color: $mol_theme.card ,
 			},
 			border: {
 				radius: $mol_gap.round,
 			},
-			boxShadow: `0 0.5rem 0.5rem -0.5rem hsla(0,0%,0%,.25)` ,
+			box: {
+				shadow: [[ 0, `0.5rem`, `0.5rem`, `-0.5rem`, hsla( 0, 0, 0, .25 ) ]],
+			},
 			zIndex: 2,
 		},
 
@@ -50,6 +48,7 @@ namespace $.$$ {
 			minHeight: rem(2),
 			margin: 0,
 			padding: $mol_gap.text,
+			gap: $mol_gap.text,
 			wordBreak: 'normal',
 			textShadow: '0 0',
 
@@ -59,7 +58,7 @@ namespace $.$$ {
 			},
 	
 			flex: {
-				grow: 1000,
+				grow: 1,
 				shrink: 1,
 				basis: 'auto',
 			},
@@ -70,7 +69,7 @@ namespace $.$$ {
 			
 			flex: {
 				basis: 'auto',
-				grow: 0,
+				grow: 1000,
 				shrink: 1,
 			},
 			display: 'flex',
@@ -87,21 +86,38 @@ namespace $.$$ {
 				basis: per(100),
 			},
 		},
-
+		
+		Body_content: {
+			padding: $mol_gap.block ,
+			flex: {
+				direction: 'column',
+				shrink: 1,
+				grow: 1,
+			},
+			justify: {
+				self: 'stretch',
+			},
+		},
+		
 		Foot: {
 			display: 'flex',
 			justifyContent: 'space-between',
 			flex: 'none',
 			margin: 0,
-			overflow: 'hidden',
 			background: {
-				color: $mol_theme.back ,
+				color: $mol_theme.card ,
 			},
 			border: {
 				radius: $mol_gap.round,
 			},
-			boxShadow: `0 -0.5rem 0.5rem -0.5rem hsla(0,0%,0%,.25)` ,
+			box: {
+				shadow: [[ 0, `-0.5rem`, `0.5rem`, `-0.5rem`, hsla( 0, 0, 0, .25 ) ]],
+			},
 			zIndex: 1,
+			padding: $mol_gap.block ,
+			':empty': {
+				display: 'none',
+			},
 		},	
 
 	} )

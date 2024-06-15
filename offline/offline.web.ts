@@ -1,42 +1,92 @@
 namespace $ {
+	
+	const blacklist = new Set([
+		'//cse.google.com/adsense/search/async-ads.js'
+	])
 
-	export function $mol_offline( uri = 'web.js' ) {
+	/** Installs service worker proxy, which caches all requests and respond from cache on http errors. */
+	export function $mol_offline_web() {
 		
 		if( typeof window === 'undefined' ) {
 			
 			self.addEventListener( 'install' , ( event : any )=> {
-				self['skipWaiting']()
+				;( self as any ).skipWaiting()
 			} )
 
 			self.addEventListener( 'activate' , ( event : any )=> {
-				self['clients'].claim()
-				console.info( '$mol_offline activated' )
+				
+				caches.delete( 'v1' )
+				caches.delete( '$mol_offline' )
+				
+				;( self as any ).clients.claim()
+				
+				$$.$mol_log3_done({
+					place: '$mol_offline',
+					message: 'Activated',
+				})
+				
 			} )
 
 			self.addEventListener( 'fetch' , ( event : any )=> {
-				event.respondWith(
-
-					fetch( event.request )
-					.then( response => {
-
-						if( event.request.method !== 'GET' ) return response
-
-						event.waitUntil(
-							caches.open( 'v1' )
-							.then( cache => cache.put( event.request , response ) )
+				
+				const request = event.request as Request
+				
+				if( blacklist.has( request.url.replace( /^https?:/, '' ) ) ) {
+					return event.respondWith(
+						new Response(
+							null,
+							{
+								status: 418,
+								statusText: 'Blocked'
+							},
 						)
+					)
+				}
+				
+				if( request.method !== 'GET' ) return
+				if( !/^https?:/.test( request.url ) ) return
+				if( /\?/.test( request.url ) ) return
+				if (request.cache === 'no-store') return
 
-						return response.clone()
+				const fetch_data = () => fetch( request ).then( response => {
+					if (response.status !== 200) return response
+					event.waitUntil(
+						caches.open( '$mol_offline' ).then(
+							cache => cache.put( request , response )
+						)
+					)
+					
+					return response.clone()
+				} )
 
-					} )
-					.catch( error => {
+				const fresh = request.cache === 'force-cache' ? null : fetch_data()
 
-						return caches.match( event.request )
-						.catch( error2 => $mol_fail_hidden( error ) )
+				if (fresh) event.waitUntil( fresh )
 
-					} )
-
+				event.respondWith(
+					caches.match( request ).then(
+						cached => request.cache === 'no-cache' || request.cache === 'reload'
+							? ( cached
+								? fresh!
+									.then(actual => {
+										if (actual.status === cached.status) return actual
+										throw new Error(
+											`${actual.status}${actual.statusText ? ` ${actual.statusText}` : ''}`,
+											{ cause: actual }
+										)
+									})
+									.catch((err: Error) => {
+										const cloned = cached.clone()
+										const message = `${err.cause instanceof Response ? '' : '500 '}${err.message} $mol_offline fallback to cache`
+										cloned.headers.set('$mol_offline_remote_status', message)
+										return cloned
+									})
+								: fresh
+							)
+							: ( cached || fresh || fetch_data() )
+					)
 				)
+				
 			})
 
 			self.addEventListener( 'beforeinstallprompt' , ( event : any )=> {
@@ -44,12 +94,16 @@ namespace $ {
 				event.prompt()
 			} )
 
-		} if( location.protocol !== 'about:' ) {
-			if( navigator.serviceWorker ) navigator.serviceWorker.register( uri )
-			else if( location.protocol === 'http:' ) console.warn( 'HTTPS is required for service workers.' )
-			else console.warn( 'Service Worker is not supported.' )
+		} else if( location.protocol !== 'https:' && location.hostname !== 'localhost' ) {
+			console.warn( 'HTTPS or localhost is required for service workers.' )
+		} else if( !navigator.serviceWorker ) {
+			console.warn( 'Service Worker is not supported.' )
+		} else {
+			navigator.serviceWorker.register( 'web.js' )
 		}
 
 	}
+
+	$.$mol_offline = $mol_offline_web
 
 }

@@ -23,10 +23,10 @@ namespace $ {
 
 		if (type === 'null') return value.data(type)
 
-		if (Number(type).toString() === type) return value.data(type)
+		if (Number(type).toString() === type.replace(/^\+/, '')) return value.data(type)
 
 		return this.$mol_fail(
-			err`Value ${value.value} not allowed at ${value.span}, use ${example}`
+			err`Value ${value.toString()} not allowed at ${value.span}, use ${example}`
 		)
 	}
 

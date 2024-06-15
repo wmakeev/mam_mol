@@ -9,6 +9,12 @@ namespace $ {
 		second? : number
 	}
 
+	/**
+	 * Small, simple, powerful, and fast TypeScript/JavaScript library for proper date/time/duration/interval arithmetic.
+	 *
+	 * Immutable iso8601 time duration representation.
+	 * @see http://localhost:9080/mol/app/docs/-/test.html#!demo=mol_time_demo
+	 */
 	export class $mol_time_duration extends $mol_time_base {
 
 		constructor( config : $mol_time_duration_config = 0 ) {
@@ -16,6 +22,7 @@ namespace $ {
 			super()
 			
 			if( typeof config === 'number' ) {
+				if( !Number.isFinite( config ) ) throw new RangeError( `Wrong ms count` )
 				this.second = config / 1000
 				return
 			}
@@ -75,6 +82,33 @@ namespace $ {
 		readonly hour : number = 0
 		readonly minute : number = 0
 		readonly second : number = 0
+		
+		get normal() {
+			
+			let second = this.second ?? 0
+			let minute = this.minute ?? 0
+			let hour = this.hour ?? 0
+			let day = this.day ?? 0
+			
+			minute += Math.floor( second / 60 )
+			second = second % 60
+			
+			hour += Math.floor( minute / 60 )
+			minute = minute % 60
+			
+			day += Math.floor( hour / 24 )
+			hour = hour % 24
+			
+			return new $mol_time_duration({
+				year: this.year,
+				month: this.month,
+				day: day,
+				hour: hour,
+				minute: minute,
+				second: second,
+			})
+			
+		}
 
 		summ( config : $mol_time_duration_config ) {
 			const duration = new $mol_time_duration( config )
@@ -117,6 +151,10 @@ namespace $ {
 			return super.toString( pattern )
 		}
 
+		[ Symbol.toPrimitive ]( mode: 'default' | 'number' | 'string' ) {
+			return mode === 'number' ? this.valueOf() : this.toString()
+		}
+		
 		static patterns = {
 
 			'#Y' : ( duration : $mol_time_duration )=> {
@@ -148,6 +186,58 @@ namespace $ {
 				if( !duration.second ) return ''
 				return duration.second + 'S'
 			} ,
+			
+			'hh' : ( moment : $mol_time_moment )=> {
+				if( moment.hour == null ) return ''
+				return String( 100 + moment.hour ).slice(1)
+			} ,
+			
+			'h' : ( moment : $mol_time_moment )=> {
+				if( moment.hour == null ) return ''
+				return String( moment.hour )
+			} ,
+			
+			':mm' : ( moment : $mol_time_moment )=> {
+				if( moment.minute == null ) return ''
+				return ':' + $mol_time_moment.patterns[ 'mm' ]( moment )
+			} ,
+			
+			'mm' : ( moment : $mol_time_moment )=> {
+				if( moment.minute == null ) return ''
+				return String( 100 + moment.minute ).slice(1)
+			} ,
+			
+			'm' : ( moment : $mol_time_moment )=> {
+				if( moment.minute == null ) return ''
+				return String( moment.minute )
+			},
+			
+			':ss' : ( moment : $mol_time_moment )=> {
+				if( moment.second == null ) return ''
+				return ':' + $mol_time_moment.patterns[ 'ss' ]( moment )
+			},
+			
+			'ss' : ( moment : $mol_time_moment )=> {
+				if( moment.second == null ) return ''
+				return String( 100 + moment.second | 0 ).slice(1)
+			},
+			
+			's' : ( moment : $mol_time_moment )=> {
+				if( moment.second == null ) return ''
+				return String( moment.second | 0 )
+			} ,
+			
+			'.sss' : ( moment : $mol_time_moment )=> {
+				if( moment.second == null ) return ''
+				// if( moment.second === ( moment.second | 0 ) ) return ''
+				return '.' + $mol_time_moment.patterns[ 'sss' ]( moment )
+			},
+			
+			'sss' : ( moment : $mol_time_moment )=> {
+				if( moment.second == null ) return ''
+				const millisecond = ( moment.second - Math.trunc( moment.second ) ).toFixed( 3 )
+				return millisecond.slice(2)
+			},
 			
 		}
 

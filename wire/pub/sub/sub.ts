@@ -3,121 +3,216 @@ namespace $ {
 	/**
 	 * Publisher that can auto collect other publishers. 32B
 	 * 
-	 * 	P1 P2 P3 P4 P5 P6 S1 S2 S3
-	 * 	   ^              ^
-	 * 	   pubs_cursor    subs_from
+	 * 	P1 P2 P3 P4 S1 S2 S3
+	 * 	^           ^
+	 * 	pubs_from   subs_from
 	 */
 	export class $mol_wire_pub_sub extends $mol_wire_pub implements $mol_wire_sub {
 		
-		protected pubs_cursor = $mol_wire_stale // 4B
+		protected pub_from = 0 // 4B
+		protected cursor = $mol_wire_cursor.stale // 4B
 		
-		get wire_pubs() {
+		get temp() {
+			return false
+		}
+		
+		get pub_list() {
 			const res = [] as $mol_wire_pub[]
-			for( let i = 0; i < this.subs_from; i += 2 ) {
-				res.push( this[i] as $mol_wire_pub )
+			const max = this.cursor >=0 ? this.cursor : this.sub_from
+			for( let i = this.pub_from; i < max; i += 2 ) {
+				if( this.data[i] ) res.push( this.data[i] as $mol_wire_pub )
 			}
 			return res
 		}
 		
-		get wire_subs() {
-			const res = [] as $mol_wire_pub_sub[]
-			for( let i = this.subs_from; i < this.length; i += 2 ) {
-				res.push( this[i] as $mol_wire_pub_sub )
-			}
-			return res
-		}
-		
-		begin() {
-			this.pubs_cursor = 0
-			const sub = $mol_wire
-			$mol_wire = this
+		track_on() {
+			this.cursor = this.pub_from
+			const sub = $mol_wire_auto()
+			$mol_wire_auto( this )
 			return sub
 		}
 		
-		promo() {
+		promote() {
 			
-			if( this.pubs_cursor >= 0 ) {
+			if( this.cursor >= this.pub_from ) {
 				$mol_fail( new Error( 'Circular subscription' ) )
 			}
 			
-			$mol_wire?.next( this )
+			super.promote()
 		}
 		
-		next( pub?: $mol_wire_pub ): $mol_wire_pub | null {
+		track_next( pub?: $mol_wire_pub ): $mol_wire_pub | null {
 			
-			if( this.pubs_cursor < 0 ) $mol_fail( new Error( 'Promo to non begun sub' ) )
+			if( this.cursor < 0 ) $mol_fail( new Error( 'Promo to non begun sub' ) )
 			
-			if( this.pubs_cursor < this.subs_from ) {
+			if( this.cursor < this.sub_from ) {
 			
- 				const next = this[ this.pubs_cursor ] as $mol_wire_pub
-				if( pub === undefined ) return next
+ 				const next = this.data[ this.cursor ] as $mol_wire_pub | undefined
+				if( pub === undefined ) return next ?? null
 				
 				if( next === pub ) {
-					this.pubs_cursor += 2
+					this.cursor += 2
 					return next
 				}
 				
-				next.off( this[ this.pubs_cursor + 1 ] as number )
+				if( next ) {
+					
+					if( this.sub_from < this.data.length ) {
+						this.peer_move( this.sub_from, this.data.length )
+					}
+					
+					this.peer_move( this.cursor, this.sub_from )
+					this.sub_from += 2
+					
+				}
 				
 			} else {
 				
 				if( pub === undefined ) return null
 				
-				if( this.subs_from < this.length ) {
-					this.move( this.subs_from, this.length )
+				if( this.sub_from < this.data.length ) {
+					this.peer_move( this.sub_from, this.data.length )
 				}
 				
-				this.subs_from += 2
+				this.sub_from += 2
 				
 			}			
 			
-			this[ this.pubs_cursor ] = pub
-			this[ this.pubs_cursor + 1 ] = pub.on( this, this.pubs_cursor )
+			this.data[ this.cursor ] = pub
+			this.data[ this.cursor + 1 ] = pub.sub_on( this, this.cursor )
 			
-			this.pubs_cursor += 2
+			this.cursor += 2
 			
 			return pub
 		}
 		
-		end( sub: $mol_wire_sub | null ) {
+		track_off( sub: $mol_wire_sub | null ) {
 			
-			if( this.pubs_cursor < 0 ) $mol_fail( new Error( 'End of non begun sub' ) )
+			$mol_wire_auto( sub )
+			
+			if( this.cursor < 0 ) {
+				$mol_fail( new Error( 'End of non begun sub' ) )
+			}
 			
 			for(
-				let cursor = this.pubs_cursor;
-				cursor < this.subs_from;
+				let cursor = this.pub_from;
+				cursor < this.cursor;
+				cursor += 2
+			) {
+				const pub = this.data[ cursor ] as $mol_wire_pub
+				pub.fresh()
+			}
+			
+			this.cursor = $mol_wire_cursor.fresh
+			
+		}
+		
+		pub_off( sub_pos: number ) {
+			this.data[ sub_pos ] = undefined as any
+			this.data[ sub_pos + 1 ] = undefined as any 
+		}
+		
+		destructor() {
+			
+			for(
+				let cursor = this.data.length - 2;
+				cursor >= this.sub_from;
+				cursor -= 2
+			) {
+				const sub = this.data[ cursor ] as $mol_wire_sub
+				const pos = this.data[ cursor + 1 ] as number
+				sub.pub_off( pos )
+				this.data.pop()
+				this.data.pop()
+			}
+			
+			this.cursor = this.pub_from
+			this.track_cut()
+			this.cursor = $mol_wire_cursor.final
+			
+		}
+		
+		track_cut() {
+			
+			if( this.cursor < this.pub_from ) {
+				$mol_fail( new Error( 'Cut of non begun sub' ) )
+			}
+			
+			let tail = 0
+			
+			for(
+				let cursor = this.cursor;
+				cursor < this.sub_from;
 				cursor += 2
 			) {
 				
-				const pub = this[ cursor ] as $mol_wire_pub
-				pub.off( this[ cursor + 1 ] as number )
+				const pub = this.data[ cursor ] as $mol_wire_pub | undefined
+				pub?.sub_off( this.data[ cursor + 1 ] as number )
 				
-				if( this.subs_from < this.length ) {
-					pub.move( cursor, this.length - 2 )
+				if( this.sub_from < this.data.length ) {
+					this.peer_move( this.data.length - 2, cursor )
+					this.data.pop()
+					this.data.pop()
+				} else {
+					++ tail
 				}
 				
 			}
 			
-			const count = this.pubs_cursor + this.length - this.subs_from
-			while( this.length > count ) {
-				this.pop()
-				this.pop()
+			for(; tail; -- tail ) {
+				this.data.pop()
+				this.data.pop()
 			}
 			
-			this.subs_from = this.pubs_cursor
-			
-			$mol_wire = sub
-			
-			this.pubs_cursor = $mol_wire_fresh
+			this.sub_from = this.cursor
 			
 		}
 		
-		absorb( quant: number ) {
+		complete() { }
+		
+		complete_pubs() {
 			
-			if( this.pubs_cursor >= quant ) return false
-			this.pubs_cursor = quant
+			const limit = this.cursor < 0 ? this.sub_from : this.cursor 
 			
-			return super.absorb( quant )
+			for(
+				let cursor = this.pub_from;
+				cursor < limit;
+				cursor += 2
+			) {
+				const pub = this.data[ cursor ] as $mol_wire_pub
+				if( pub?.incompleted ) return 
+			}
+			
+			for(
+				let cursor = this.pub_from;
+				cursor < limit;
+				cursor += 2
+			) {
+				const pub = this.data[ cursor ] as $mol_wire_pub
+				pub?.complete()
+			}
+			
+		}
+
+		absorb( quant = $mol_wire_cursor.stale ) {
+			
+			if( this.cursor === $mol_wire_cursor.final ) return
+			if( this.cursor >= quant ) return
+			
+			this.cursor = quant
+			this.emit( $mol_wire_cursor.doubt )
+			
+		}
+		
+		[ $mol_dev_format_head ]() {
+			return $mol_dev_format_native( this )
+		}
+		
+		/**
+		 * Is subscribed to any publisher or not.
+		 */
+		get pub_empty() {
+			return this.sub_from === this.pub_from
 		}
 		
 	}

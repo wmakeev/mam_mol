@@ -25,14 +25,14 @@ namespace $ {
 		/** Create read-only transaction. */
 		read< Names extends Exclude< keyof Schema, symbol | number > >( ... names: Names[] ) {
 			return new $mol_db_transaction< Pick< Schema, Names > >(
-				this.native.transaction( names, 'readonly' )
+				this.native.transaction( names, 'readonly', { durability: 'relaxed' } )
 			).stores
 		}
 		
 		/** Create read/write transaction. */
 		change< Names extends Exclude< keyof Schema, symbol | number > >( ... names: Names[] ) {
 			return new $mol_db_transaction< Pick< Schema, Names > >(
-				this.native.transaction( names, 'readwrite' )
+				this.native.transaction( names, 'readwrite', { durability: 'relaxed' } )
 			)
 		}
 		
@@ -46,8 +46,8 @@ namespace $ {
 			
 			const request = $mol_dom_context.indexedDB.deleteDatabase( this.name )
 			
-			request.onblocked = console.error
-			return $mol_db_response( request ).then( ()=> {} )
+			request.onblocked = console.warn
+			return $mol_db_response( request )
 			
 		}
 		

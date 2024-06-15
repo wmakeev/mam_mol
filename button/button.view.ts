@@ -1,8 +1,13 @@
 namespace $.$$ {
+	
+	/**
+	 * Simple button.
+	 * @see https://mol.hyoo.ru/#!section=demos/demo=mol_button_demo
+	 */
 	export class $mol_button extends $.$mol_button {
 
 		@ $mol_mem
-		fiber( next = null as null | $mol_fiber ) { return next }
+		status( next = [ null as any ] ) { return next }
 		
 		disabled() {
 			return !this.enabled()
@@ -13,15 +18,19 @@ namespace $.$$ {
 			if( !next ) return
 			if( !this.enabled() ) return
 
-			this.fiber( $mol_fiber.current! )
-			
-			this.event_click( next )
-			this.click( next )
-
-			if( this.fiber() === $mol_fiber.current! ) {
-				this.fiber( null )
+			try {
+				
+				this.event_click( next )
+				this.click( next )
+				this.status([ null ])
+				
+			} catch( error: any ) {
+				
+				Promise.resolve().then( ()=> this.status([ error ]) )
+				$mol_fail_hidden( error )
+				
 			}
-			
+
 		}
 		
 		event_key_press ( event: KeyboardEvent ) { 
@@ -36,22 +45,24 @@ namespace $.$$ {
 
 		error() {
 
-			try {
-				this.fiber()?.get()
-				return ''
-			} catch( error: any ) {
+			const [ error ] = this.status()
+			if( !error ) return ''
 
-				if( error instanceof Promise ) {
-					return $mol_fail_hidden( error )
-				}
-				
-				return String( error.message ?? error )
+			if( error instanceof Promise ) {
+				return $mol_fail_hidden( error )
 			}
+			
+			return String( error.message ?? error )
 
 		}
-
-		hint_or_error() {
-			return this.error() || super.hint_or_error()
+		
+		hint_safe() {
+			try {
+				return this.hint()
+			} catch( error ) {
+				$mol_fail_log( error )
+				return ''
+			}
 		}
 
 		sub_visible() {

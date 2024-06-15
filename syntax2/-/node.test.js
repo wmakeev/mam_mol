@@ -1,4 +1,12 @@
 "use strict";
+"use strict";
+Error.stackTraceLimit = 50;
+var $;
+(function ($) {
+})($ || ($ = {}));
+module.exports = $;
+
+;
 "use strict"
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -8,18 +16,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 	return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 
-var globalThis = globalThis || ( typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : this )
-var $ = ( typeof module === 'object' ) ? Object.setPrototypeOf( module['export'+'s'] , globalThis ) : globalThis
+var $ = ( typeof module === 'object' ) ? ( module['export'+'s'] = globalThis ) : globalThis
 $.$$ = $
 
-;
-"use strict";
-Error.stackTraceLimit = 50;
-var $;
-(function ($) {
-})($ || ($ = {}));
-module.exports = $;
-//mam.js.map
 ;
 "use strict";
 var $;
@@ -29,7 +28,7 @@ var $;
     }
     $.$mol_fail = $mol_fail;
 })($ || ($ = {}));
-//fail.js.map
+
 ;
 "use strict";
 var $;
@@ -46,7 +45,7 @@ var $;
                 });
             }
             const parts = '(' + this.rules.map(rule => rule.regExp.source).join(')|(') + ')';
-            this.regexp = RegExp(`([\\s\\S]*?)(?:(${parts})|$(?![^]))`, 'gm');
+            this.regexp = RegExp(`([\\s\\S]*?)(?:(${parts})|$(?![^]))`, 'gmu');
         }
         rules = [];
         regexp;
@@ -61,7 +60,7 @@ var $;
                     throw new Error('Empty token');
                 var prefix = found[1];
                 if (prefix)
-                    handle('', prefix, [], start);
+                    handle('', prefix, [prefix], start);
                 var suffix = found[2];
                 if (!suffix)
                     continue;
@@ -73,7 +72,7 @@ var $;
                     }
                     offset += rule.size + 1;
                 }
-                $.$mol_fail(new Error('$mol_syntax2 is broken'));
+                $mol_fail(new Error('$mol_syntax2 is broken'));
             }
         }
         parse(text, handlers) {
@@ -82,6 +81,6 @@ var $;
     }
     $.$mol_syntax2 = $mol_syntax2;
 })($ || ($ = {}));
-//syntax2.js.map
+
 
 //# sourceMappingURL=node.test.js.map

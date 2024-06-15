@@ -1,14 +1,14 @@
 # $mol_textarea
 
-Input field to enter multiple line text.
+An input field for entering multiline text.
 
-## [Online demo](https://mol.js.org/app/demo/-/#demo=mol_textarea_demo)
+## [Online demo](https://mol.hyoo.ru/#!section=demos/readme/demo=mol_textarea_demo)
 
 ## Usage example
 
 ```tree
 <= Description $mol_textarea
-	value?val <=> description?val \
+	value? <=> description? \
 	hint <= description_hint @ \Descr
 	enabled <= description_changeable true
 ```
@@ -21,8 +21,8 @@ Property `value` is a currently displayed text.
 
 **`hint() : string`**
 
-To display placeholder text on our `$mol_string` element we should use `hint` property.
+Placeholder text in the absence of any value.
 
 **`enabled() : boolean`**
 
-Allowed text changing or not.
+Whether the input is interactive.

@@ -1,5 +1,5 @@
-$mol_page_demo $mol_demo_large
-	title @ \Page with header, body and footer
+$mol_page_demo $mol_example_large
+	title \Page with header, body and footer
 	sub /
 		<= Page $mol_page
 			tools /
@@ -8,7 +8,16 @@ $mol_page_demo $mol_demo_large
 			body /
 				<= Text $mol_filler
 			foot /
-				<= Foot_content $mol_row
-					sub /
-						<= Button_foot $mol_button_minor
-							title \Footer Button
+				<= Button_foot $mol_button_minor
+					title \Footer Button
+	tags /
+		\container
+		\header
+		\footer
+		\toolbar
+		\app
+		\bar
+		\bottom
+		\navigator
+	aspects /
+		\Widget/Layout

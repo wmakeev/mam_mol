@@ -1,19 +1,6 @@
+#!/usr/bin/env node
 "use strict";
 var exports = void 0;
-"use strict"
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-	var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-	if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-	else for (var i = decorators.length - 1; i >= 0; i--) if ((d = decorators[i])) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-	return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-
-var globalThis = globalThis || ( typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : this )
-var $ = ( typeof module === 'object' ) ? Object.setPrototypeOf( module['export'+'s'] , globalThis ) : globalThis
-$.$$ = $
-
-;
 
 var $node = $node || {}
 void function( module ) { var exports = module.exports = this; function require( id ) { return $node[ id.replace( /^.\// , "../" ) ] }; 
@@ -24,10 +11,23 @@ var $;
 (function ($) {
 })($ || ($ = {}));
 module.exports = $;
-//mam.js.map
+
 ;
 
-$node[ "../mam" ] = $node[ "../mam.js" ] = module.exports }.call( {} , {} )
+$node[ "../mam.ts" ] = $node[ "../mam.ts" ] = module.exports }.call( {} , {} )
+;
+"use strict"
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	else for (var i = decorators.length - 1; i >= 0; i--) if ((d = decorators[i])) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+
+var $ = ( typeof module === 'object' ) ? ( module['export'+'s'] = globalThis ) : globalThis
+$.$$ = $
+
 ;
 "use strict";
 var $;
@@ -62,15 +62,17 @@ var $;
     }
     $.$mol_time_base = $mol_time_base;
 })($ || ($ = {}));
-//base.js.map
+
 ;
 "use strict";
 var $;
 (function ($) {
-    class $mol_time_duration extends $.$mol_time_base {
+    class $mol_time_duration extends $mol_time_base {
         constructor(config = 0) {
             super();
             if (typeof config === 'number') {
+                if (!Number.isFinite(config))
+                    throw new RangeError(`Wrong ms count`);
                 this.second = config / 1000;
                 return;
             }
@@ -125,6 +127,26 @@ var $;
         hour = 0;
         minute = 0;
         second = 0;
+        get normal() {
+            let second = this.second ?? 0;
+            let minute = this.minute ?? 0;
+            let hour = this.hour ?? 0;
+            let day = this.day ?? 0;
+            minute += Math.floor(second / 60);
+            second = second % 60;
+            hour += Math.floor(minute / 60);
+            minute = minute % 60;
+            day += Math.floor(hour / 24);
+            hour = hour % 24;
+            return new $mol_time_duration({
+                year: this.year,
+                month: this.month,
+                day: day,
+                hour: hour,
+                minute: minute,
+                second: second,
+            });
+        }
         summ(config) {
             const duration = new $mol_time_duration(config);
             return new $mol_time_duration({
@@ -159,6 +181,9 @@ var $;
         toString(pattern = 'P#Y#M#DT#h#m#s') {
             return super.toString(pattern);
         }
+        [Symbol.toPrimitive](mode) {
+            return mode === 'number' ? this.valueOf() : this.toString();
+        }
         static patterns = {
             '#Y': (duration) => {
                 if (!duration.year)
@@ -190,11 +215,62 @@ var $;
                     return '';
                 return duration.second + 'S';
             },
+            'hh': (moment) => {
+                if (moment.hour == null)
+                    return '';
+                return String(100 + moment.hour).slice(1);
+            },
+            'h': (moment) => {
+                if (moment.hour == null)
+                    return '';
+                return String(moment.hour);
+            },
+            ':mm': (moment) => {
+                if (moment.minute == null)
+                    return '';
+                return ':' + $mol_time_moment.patterns['mm'](moment);
+            },
+            'mm': (moment) => {
+                if (moment.minute == null)
+                    return '';
+                return String(100 + moment.minute).slice(1);
+            },
+            'm': (moment) => {
+                if (moment.minute == null)
+                    return '';
+                return String(moment.minute);
+            },
+            ':ss': (moment) => {
+                if (moment.second == null)
+                    return '';
+                return ':' + $mol_time_moment.patterns['ss'](moment);
+            },
+            'ss': (moment) => {
+                if (moment.second == null)
+                    return '';
+                return String(100 + moment.second | 0).slice(1);
+            },
+            's': (moment) => {
+                if (moment.second == null)
+                    return '';
+                return String(moment.second | 0);
+            },
+            '.sss': (moment) => {
+                if (moment.second == null)
+                    return '';
+                return '.' + $mol_time_moment.patterns['sss'](moment);
+            },
+            'sss': (moment) => {
+                if (moment.second == null)
+                    return '';
+                const millisecond = (moment.second - Math.trunc(moment.second)).toFixed(3);
+                return millisecond.slice(2);
+            },
         };
     }
     $.$mol_time_duration = $mol_time_duration;
 })($ || ($ = {}));
-//duration.js.map
+
 ;
 "use strict";
 var $;
@@ -204,7 +280,109 @@ var $;
     }
     $.$mol_fail = $mol_fail;
 })($ || ($ = {}));
-//fail.js.map
+
+;
+"use strict";
+var $;
+(function ($) {
+    $['devtoolsFormatters'] ||= [];
+    function $mol_dev_format_register(config) {
+        $['devtoolsFormatters'].push(config);
+    }
+    $.$mol_dev_format_register = $mol_dev_format_register;
+    $.$mol_dev_format_head = Symbol('$mol_dev_format_head');
+    $.$mol_dev_format_body = Symbol('$mol_dev_format_body');
+    $mol_dev_format_register({
+        header: (val, config = false) => {
+            if (config)
+                return null;
+            if (!val)
+                return null;
+            if ($.$mol_dev_format_head in val) {
+                try {
+                    return val[$.$mol_dev_format_head]();
+                }
+                catch (error) {
+                    return $.$mol_dev_format_accent($mol_dev_format_native(val), '💨', $mol_dev_format_native(error), '');
+                }
+            }
+            if (typeof val === 'function') {
+                return $mol_dev_format_native(val);
+            }
+            if (Symbol.toStringTag in val) {
+                return $mol_dev_format_native(val);
+            }
+            return null;
+        },
+        hasBody: val => val[$.$mol_dev_format_body],
+        body: val => val[$.$mol_dev_format_body](),
+    });
+    function $mol_dev_format_native(obj) {
+        if (typeof obj === 'undefined')
+            return $.$mol_dev_format_shade('undefined');
+        return [
+            'object',
+            {
+                object: obj,
+                config: true,
+            },
+        ];
+    }
+    $.$mol_dev_format_native = $mol_dev_format_native;
+    function $mol_dev_format_auto(obj) {
+        if (obj == null)
+            return $.$mol_dev_format_shade(String(obj));
+        return [
+            'object',
+            {
+                object: obj,
+                config: false,
+            },
+        ];
+    }
+    $.$mol_dev_format_auto = $mol_dev_format_auto;
+    function $mol_dev_format_element(element, style, ...content) {
+        const styles = [];
+        for (let key in style)
+            styles.push(`${key} : ${style[key]}`);
+        return [
+            element,
+            {
+                style: styles.join(' ; '),
+            },
+            ...content,
+        ];
+    }
+    $.$mol_dev_format_element = $mol_dev_format_element;
+    function $mol_dev_format_span(style, ...content) {
+        return $mol_dev_format_element('span', {
+            ...style,
+        }, ...content);
+    }
+    $.$mol_dev_format_span = $mol_dev_format_span;
+    $.$mol_dev_format_div = $mol_dev_format_element.bind(null, 'div');
+    $.$mol_dev_format_ol = $mol_dev_format_element.bind(null, 'ol');
+    $.$mol_dev_format_li = $mol_dev_format_element.bind(null, 'li');
+    $.$mol_dev_format_table = $mol_dev_format_element.bind(null, 'table');
+    $.$mol_dev_format_tr = $mol_dev_format_element.bind(null, 'tr');
+    $.$mol_dev_format_td = $mol_dev_format_element.bind(null, 'td');
+    $.$mol_dev_format_accent = $mol_dev_format_span.bind(null, {
+        'color': 'magenta',
+    });
+    $.$mol_dev_format_strong = $mol_dev_format_span.bind(null, {
+        'font-weight': 'bold',
+    });
+    $.$mol_dev_format_string = $mol_dev_format_span.bind(null, {
+        'color': 'green',
+    });
+    $.$mol_dev_format_shade = $mol_dev_format_span.bind(null, {
+        'color': 'gray',
+    });
+    $.$mol_dev_format_indent = $.$mol_dev_format_div.bind(null, {
+        'margin-left': '13px'
+    });
+})($ || ($ = {}));
+
 ;
 "use strict";
 var $;
@@ -223,13 +401,16 @@ var $;
         const numb = Number(str);
         if (numb < max)
             return numb;
-        $.$mol_fail(new Error(`Wrong time component ${str}`));
+        $mol_fail(new Error(`Wrong time component ${str}`));
     }
-    class $mol_time_moment extends $.$mol_time_base {
+    class $mol_time_moment extends $mol_time_base {
         constructor(config = new Date) {
             super();
-            if (typeof config === 'number')
+            if (typeof config === 'number') {
                 config = new Date(config);
+                if (Number.isNaN(config.valueOf()))
+                    throw new RangeError(`Wrong ms count`);
+            }
             if (typeof config === 'string') {
                 const parsed = /^(?:(\d\d?\d?\d?)(?:-?(\d\d?)(?:-?(\d\d?))?)?)?(?:[T ](?:(\d\d?)(?::?(\d\d?)(?::?(\d\d?(?:\.\d+)?))?)?)?(Z|[\+\-]\d\d?(?::?(?:\d\d?)?)?)?)?$/.exec(config);
                 if (!parsed)
@@ -247,7 +428,7 @@ var $;
                 if (parsed[6])
                     this.second = numb(parsed[6], 60);
                 if (parsed[7])
-                    this.offset = new $.$mol_time_duration(parsed[7]);
+                    this.offset = new $mol_time_duration(parsed[7]);
                 return;
             }
             if (config instanceof Date) {
@@ -258,7 +439,7 @@ var $;
                 this.minute = config.getMinutes();
                 this.second = config.getSeconds() + config.getMilliseconds() / 1000;
                 const offset = -config.getTimezoneOffset();
-                this.offset = new $.$mol_time_duration({
+                this.offset = new $mol_time_duration({
                     hour: (offset < 0) ? Math.ceil(offset / 60) : Math.floor(offset / 60),
                     minute: offset % 60
                 });
@@ -270,7 +451,7 @@ var $;
             this.hour = config.hour;
             this.minute = config.minute;
             this.second = config.second;
-            this.offset = config.offset == null ? config.offset : new $.$mol_time_duration(config.offset);
+            this.offset = config.offset == null ? config.offset : new $mol_time_duration(config.offset);
         }
         year;
         month;
@@ -317,7 +498,7 @@ var $;
             });
         }
         shift(config) {
-            const duration = new $.$mol_time_duration(config);
+            const duration = new $mol_time_duration(config);
             const moment = new $mol_time_moment().merge({
                 year: this.year,
                 month: this.month,
@@ -353,8 +534,8 @@ var $;
                 offset: mask.offset === undefined ? undefined : this.offset,
             });
         }
-        toOffset(config) {
-            const duration = new $.$mol_time_duration(config);
+        toOffset(config = new $mol_time_moment().offset) {
+            const duration = new $mol_time_duration(config);
             const offset = this.offset || new $mol_time_moment().offset;
             let with_time = new $mol_time_moment('T00:00:00').merge(this);
             const moment = with_time.shift(duration.summ(offset.mult(-1)));
@@ -364,6 +545,12 @@ var $;
         toJSON() { return this.toString(); }
         toString(pattern = 'YYYY-MM-DDThh:mm:ss.sssZ') {
             return super.toString(pattern);
+        }
+        [Symbol.toPrimitive](mode) {
+            return mode === 'number' ? this.valueOf() : this.toString();
+        }
+        [$mol_dev_format_head]() {
+            return $mol_dev_format_span({}, $mol_dev_format_native(this), ' ', $mol_dev_format_accent(this.toString('YYYY-MM-DD hh:mm:ss.sss Z')));
         }
         static patterns = {
             'YYYY': (moment) => {
@@ -566,8 +753,8 @@ var $;
             'sss': (moment) => {
                 if (moment.second == null)
                     return '';
-                const millisecond = Math.floor((moment.second - Math.floor(moment.second)) * 1000);
-                return String(1000 + millisecond).slice(1);
+                const millisecond = (moment.second - Math.trunc(moment.second)).toFixed(3);
+                return millisecond.slice(2);
             },
             'Z': (moment) => {
                 const offset = moment.offset;
@@ -585,46 +772,46 @@ var $;
     }
     $.$mol_time_moment = $mol_time_moment;
 })($ || ($ = {}));
-//moment.js.map
+
 ;
 "use strict";
 var $;
 (function ($) {
-    class $mol_time_interval extends $.$mol_time_base {
+    class $mol_time_interval extends $mol_time_base {
         constructor(config) {
             super();
             if (typeof config === 'string') {
                 var chunks = config.split('/');
                 if (chunks[0]) {
                     if (chunks[0][0].toUpperCase() === 'P') {
-                        this._duration = new $.$mol_time_duration(chunks[0]);
+                        this._duration = new $mol_time_duration(chunks[0]);
                     }
                     else {
-                        this._start = new $.$mol_time_moment(chunks[0]);
+                        this._start = new $mol_time_moment(chunks[0]);
                     }
                 }
                 else {
-                    this._start = new $.$mol_time_moment();
+                    this._start = new $mol_time_moment();
                 }
                 if (chunks[1]) {
                     if (chunks[1][0].toUpperCase() === 'P') {
-                        this._duration = new $.$mol_time_duration(chunks[1]);
+                        this._duration = new $mol_time_duration(chunks[1]);
                     }
                     else {
-                        this._end = new $.$mol_time_moment(chunks[1]);
+                        this._end = new $mol_time_moment(chunks[1]);
                     }
                 }
                 else {
-                    this._end = new $.$mol_time_moment();
+                    this._end = new $mol_time_moment();
                 }
                 return;
             }
             if (config.start !== undefined)
-                this._start = new $.$mol_time_moment(config.start);
+                this._start = new $mol_time_moment(config.start);
             if (config.end !== undefined)
-                this._end = new $.$mol_time_moment(config.end);
+                this._end = new $mol_time_moment(config.end);
             if (config.duration !== undefined)
-                this._duration = new $.$mol_time_duration(config.duration);
+                this._duration = new $mol_time_duration(config.duration);
         }
         _start;
         get start() {
@@ -642,15 +829,18 @@ var $;
         get duration() {
             if (this._duration)
                 return this._duration;
-            return this._duration = new $.$mol_time_duration(this._end.valueOf() - this._start.valueOf());
+            return this._duration = new $mol_time_duration(this._end.valueOf() - this._start.valueOf());
         }
         toJSON() { return this.toString(); }
         toString() {
             return (this._start || this._duration || '').toString() + '/' + (this._end || this._duration || '').toString();
         }
+        [Symbol.toPrimitive](mode) {
+            return this.toString();
+        }
     }
     $.$mol_time_interval = $mol_time_interval;
 })($ || ($ = {}));
-//interval.js.map
+
 
 //# sourceMappingURL=node.js.map

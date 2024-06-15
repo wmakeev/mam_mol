@@ -1,8 +1,18 @@
 namespace $.$$ {
 
+	/**
+	 * Plugin for touch gestures.
+	 * @see [mol_plugin](../plugin/readme.md)
+	 */
 	export class $mol_touch extends $.$mol_touch {
 		
 		auto() {
+			this.pointer_events()
+			this.start_pan()
+			this.start_pos()
+			this.start_distance()
+			this.start_zoom()
+			this.action_type()
 			this.view_rect()
 		}
 		
@@ -17,7 +27,7 @@ namespace $.$$ {
 			const events = this.pointer_events()
 			const touches = events.filter( e => e.pointerType === 'touch' )
 			const pens = events.filter( e => e.pointerType === 'pen' )
-			const mouses = events.filter( e => e.pointerType === 'mouse' )
+			const mouses = events.filter( e => !e.pointerType || e.pointerType === 'mouse' )
 			const choosen = touches.length ? touches : pens.length ? pens : mouses
 			
 			return new $mol_vector(
@@ -63,18 +73,32 @@ namespace $.$$ {
 			
 			if( event instanceof PointerEvent ) {
 
-				const events = this.pointer_events().filter( e => e.pointerId !== event.pointerId )
-				if( event.type !== 'pointerleave' ) events.push( event )
+				const events = this.pointer_events()
+					.filter( e => e instanceof PointerEvent )
+					.filter( e => e.pointerId !== event.pointerId )
+				if( event.type !== 'pointerup' && event.type !== 'pointerleave' ) events.push( event )
 				this.pointer_events( events )
 				
-				if( events.filter( e => e.pointerType === 'touch' ).length === 2 ) {
+				const touch_count = events.filter( e => e.pointerType === 'touch' ).length
+				
+				if( this.allow_zoom() && touch_count === 2 ) {
 					return this.action_type( 'zoom' )
 				}
 				
+				if( this.action_type() === 'zoom' && touch_count === 1 ) {
+					return this.action_type( 'zoom' )
+				}
+				
+				enum button {
+					left = 1,
+					right = 2,
+					middle = 4,
+				}
+				
 				if( events.length > 0 ) {
-					if( event.ctrlKey ) return this.action_type( 'zoom' )
-					if( event.buttons === 2 ) return this.action_type( 'pan' )
-					if( event.buttons === 1 ) return this.action_type( 'draw' )
+					if( event.ctrlKey && this.allow_zoom() ) return this.action_type( 'zoom' )
+					if( event.buttons === button.left && this.allow_draw() ) return this.action_type( 'draw' )
+					if( event.buttons && this.allow_pan() ) return this.action_type( 'pan' )
 				}
 				
 				return this.action_type( '' )
@@ -82,8 +106,9 @@ namespace $.$$ {
 			}
 			
 			if( event instanceof WheelEvent ) {
-				if( event.ctrlKey ) return this.action_type( 'zoom' )
-				return this.action_type( 'pan' )
+				this.pointer_events([ event as any ])
+				if( event.shiftKey ) return this.action_type( 'pan' )
+				return this.action_type( 'zoom' )
 			}
 			
 			return this.action_type( '' )
@@ -97,10 +122,14 @@ namespace $.$$ {
 			const action_type = this.event_eat( event )
 			if( !action_type ) return
 			
-			if( action_type === 'draw' ) return
-
 			const coords = this.pointer_coords()
 			this.start_pos( coords.center() )
+			
+			if( action_type === 'draw' ) {
+				this.draw_start( event )
+				return
+			}
+
 			this.start_distance( coords.distance() )
 			this.start_zoom( this.zoom() )
 
@@ -116,27 +145,24 @@ namespace $.$$ {
 
 			const action_type = this.event_eat( event )
 			
+			const start_pos = this.start_pos()
 			let pos = this.pointer_center()!
 
 			if( !action_type ) return
+			if( !start_pos ) return
+			
 			if( action_type === 'draw' ) {
-				this.draw( event )
+				
+				const distance = new $mol_vector( start_pos, pos ).distance()
+				if( distance >= 4 ) {
+					this.draw( event )
+				}
 				return
 			}
-			
-			const start_pos = this.start_pos()
-			if( !start_pos ) return
 				
 			if( action_type === 'pan' ) {
 
-				const distance = new $mol_vector( start_pos, pos ).distance()
-				if( distance >= 4 ) {
-					
-					this._menu_mute = true
-					
-					this.dom_node().setPointerCapture( event.pointerId )
-
-				}
+				this.dom_node().setPointerCapture( event.pointerId )
 				
 				this.pan(
 					new $mol_vector_2d(
@@ -221,17 +247,21 @@ namespace $.$$ {
 
 		event_end( event : PointerEvent ) {
 			
-			this.event_eat( event )
-			this.dom_node().releasePointerCapture( event.pointerId )
-			
-			if( !this.start_pos() ) {
-				this.draw( event )
-				return
+			const action = this.action_type()
+			if( action ==='draw' ) {
+				this.draw_end( event )
 			}
 			
+			this.event_leave( event )
+			
+		}
+
+		event_leave( event : PointerEvent ) {
+
+			this.event_eat( event )
+			this.dom_node().releasePointerCapture( event.pointerId )
 			this.start_pos( null )
 			
-			new $mol_after_timeout( 0, ()=> this._menu_mute = false )
 		}
 
 		swipe_left( event : PointerEvent ) {
@@ -258,12 +288,9 @@ namespace $.$$ {
 			this.event_end( event )
 		}
 		
-		_menu_mute = false
-		event_menu( event : PointerEvent ) {
-			if( this._menu_mute ) event.preventDefault()
-		}
-
 		event_wheel( event : WheelEvent ) {
+			
+			if( event.defaultPrevented ) return
 
 			if( this.pan === $mol_touch.prototype.pan && this.zoom === $mol_touch.prototype.zoom ) return
 			
@@ -276,7 +303,7 @@ namespace $.$$ {
 			if( action_type === 'zoom' ) {
 				
 				const zoom_prev = this.zoom() || 0.001
-				const zoom_next = zoom_prev * ( 1 - .1 * Math.sign( event.deltaY ) )
+				const zoom_next = zoom_prev * ( 1 - .001 * Math.min( event.deltaY, 100 ) )
 				const mult = zoom_next / zoom_prev
 				this.zoom( zoom_next )
 
@@ -291,8 +318,8 @@ namespace $.$$ {
 				
 				const pan_prev = this.pan()
 				const pan_next = new $mol_vector_2d(
-					pan_prev.x - ( event.shiftKey ? event.deltaY : event.deltaX ),
-					pan_prev.y - ( event.shiftKey ? event.deltaX : event.deltaY ),
+					pan_prev.x - event.deltaX,
+					pan_prev.y - event.deltaY,
 				)
 
 				this.pan( pan_next )

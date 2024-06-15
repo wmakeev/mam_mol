@@ -2,6 +2,43 @@
 
 Static typed facade for [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) with simple API.
 
+## Teaser
+
+```typescript
+type User = {
+	name: string
+	admin: boolean
+}
+
+// Static typed schema
+type DB = {
+	User: {
+		Key: [ string ]
+		Doc: User
+		Indexes: {
+			Name: [ string ]
+		}
+	}
+}
+
+// Automatic migrations
+const db = await $mol_db< DB >( '$my_app',
+	mig => mig.store_make( 'User' ),
+	mig => {
+		const { User } = mig.stores
+		User.index_make( 'Name', [ 'name' ] )
+	},
+)
+
+// Writing transaction
+const { User } = db.change( 'User' ).stores
+await User.put({ name: 'Jin', admin: true })
+
+// Reading transaction
+const { Name } = db.read( 'User' ).User.indexes
+const jins = await Name.select([ 'Jin' ])
+```
+
 ## IndexedDB Structure
 
 - **Database** contains named Stores
@@ -97,7 +134,7 @@ trans.abort()
 await trans.commit()
 ```
 
-Uncommited transaction without errors will be commitetd automatically. Any modification error aborts transaction.
+Uncommitted transaction without errors will be committed automatically. Any modification error aborts transaction.
 
 ## Documents Life Cycle
 
@@ -132,13 +169,13 @@ const user = await Users.get( 1 )
 ### Select 10 By Primary Keys
 
 ```typescript
-const users = await Users.get( IDBKeyRange.bound( 10, 50 ), 10 )
+const users = await Users.get( $mol_dom_context.IDBKeyRange.bound( 10, 50 ), 10 )
 ```
 
 ### Count By Primary Keys
 
 ```typescript
-const count = await Users.count( IDBKeyRange.bound( 10, 50 ) )
+const count = await Users.count( $mol_dom_context.IDBKeyRange.bound( 10, 50 ) )
 ```
 
 ### By Index

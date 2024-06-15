@@ -11,27 +11,40 @@ namespace $ {
 			return express
 		}
 
+		internal_ip() {
+			const nets = $node.os.networkInterfaces()
+			const results = Object.create( null )
+
+			for( const name of Object.keys( nets ) ) {
+				for( const net of nets[ name ]! ) {
+					// Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
+					// 'IPv4' is in Node <= 17, from 18 it's a number 4 or 6
+					const familyV4Value = typeof net.family === 'string' ? 'IPv4' : 4
+					if( net.family === familyV4Value && !net.internal ) {
+						if( !results[ name ] ) {
+							results[ name ] = []
+						}
+						results[ name ].push( net.address )
+					}
+				}
+			}
+			const internal = Object.values( results ).at( -1 ) as string[]
+			return internal[0]
+		}
+
 		@ $mol_mem
 		http() {
 
 			const server = $node.http.createServer( this.express() )
 
-			$node['portastic'].find(
-				{
-					min : this.port() ,
-					max : this.port() + 1000 ,
-					retrieve : 1
-				}
-			).then(
-				( ports : number[] ) => {
-					server.listen( ports[ 0 ] )
-					this.$.$mol_log3_done({
-						place: `${ this }` ,
-						message: `Started` ,
-						location: `http://127.0.0.1:${ ports[0] }/`
-					})
-				}
-			)
+			server.listen( this.port() )
+			
+			this.$.$mol_log3_done({
+				place: `${ this }` ,
+				message: `Started` ,
+				network: `http://${ this.internal_ip() }:${ this.port() }/`,
+				loopback: `http://localhost:${ this.port() }/`,
+			})
 
 			return server
 
@@ -44,16 +57,16 @@ namespace $ {
 
 			const socket = new $node.ws.Server({
 				server : this.http() ,
-				perMessageDeflate: {
-					zlibDeflateOptions: {
-						chunkSize: 1024,
-						memLevel: 7,
-						level: 3
-					},
-					zlibInflateOptions: {
-						chunkSize: 10 * 1024
-					},
-				}
+				// perMessageDeflate: {
+				// 	zlibDeflateOptions: {
+				// 		chunkSize: 1024,
+				// 		memLevel: 7,
+				// 		level: 3
+				// 	},
+				// 	zlibInflateOptions: {
+				// 		chunkSize: 10 * 1024
+				// 	},
+				// }
 			})
 
 			socket.on( 'connection' , line => {

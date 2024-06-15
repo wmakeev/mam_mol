@@ -1,6 +1,9 @@
 namespace $ {
 
-	function stat_convert(stat: NonNullable<ReturnType<typeof $node.fs.statSync>>): $mol_file_stat {
+	function stat_convert(stat: ReturnType<typeof $node.fs.statSync>): null | $mol_file_stat {
+		
+		if( !stat ) return null
+		
 		let type: $mol_file_type | undefined
 		if (stat.isDirectory()) type = 'dir'
 		if (stat.isFile()) type = 'file'
@@ -20,8 +23,23 @@ namespace $ {
 	function buffer_normalize(buf: Buffer): Uint8Array {
 		return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength)
 	}
+	
+	export enum $mol_file_mode_open {
+		/** create if it doesn't already exist */
+		create = $node.fs.constants.O_CREAT,
+		/** truncate to zero size if it already exists */
+		exists_truncate = $node.fs.constants.O_TRUNC,
+		/** throw exception if it already exists */
+		exists_fail = $node.fs.constants.O_EXCL,
+		read_only = $node.fs.constants.O_RDONLY,
+		write_only = $node.fs.constants.O_WRONLY,
+		read_write = $node.fs.constants.O_RDWR,
+		/** data will be appended to the end */
+		append = $node.fs.constants.O_APPEND,
+	}
 
 	export class $mol_file_node extends $mol_file {
+		
 		@ $mol_mem_key
 		static absolute( path : string ) {
 			return this.make({
@@ -30,15 +48,17 @@ namespace $ {
 		}
 
 		static relative( path : string ) {
-			return this.absolute( $node.path.resolve( path ).replace( /\\/g , '/' ) )
+			return this.absolute( $node.path.resolve( this.base, path ).replace( /\\/g , '/' ) )
 		}
 		
 		@ $mol_mem
 		watcher() {
 
+			if( /\/\./.test( this.path() ) ) return { destructor(){} }
+			
 			const watcher = $node.chokidar.watch( this.path() , {
 				persistent : true ,
-				ignored : /(^\.|___$)/ ,
+				ignored: /(^\.|___$)/ ,
 				depth :  0 ,
 				ignoreInitial : true ,
 				awaitWriteFinish: {
@@ -54,15 +74,13 @@ namespace $ {
 				file.reset()
 				
 				if( type === 'change' ) {
-					file.buffer( undefined , $mol_mem_force_update )
+					this.stat( null )
 				} else {
 					file.parent().reset()
 				}
 
 			} )
-			.on( 'error' , ( error : Error )=> {
-				this.stat( error as any , $mol_mem_force_fail )
-			} )
+			.on( 'error' , $mol_fail_log )
 			
 			return {
 				destructor() {
@@ -73,14 +91,17 @@ namespace $ {
 		}
 
 		@ $mol_mem
-		stat( next? : $mol_file_stat, force? : $mol_mem_force ) {
+		stat( next? : $mol_file_stat | null, virt?: 'virt' ) {
+			
 			let stat = next
 			const path = this.path()
 
 			this.parent().watcher()
 			
+			if( virt ) return next!
+			
 			try {
-				stat = next ?? stat_convert($node.fs.statSync( path ))
+				stat = next ?? stat_convert($node.fs.statSync( path, { throwIfNoEntry: false } ))
 			} catch( error: any ) {
 				if (error.code === 'ENOENT') error = new $mol_file_not_found(`File not found`)
 				error.message += '\n' + path
@@ -90,27 +111,31 @@ namespace $ {
 			return stat
 		}
 
-		ensure(next?: boolean) {
+		@ $mol_mem
+		ensure() {
 			const path = this.path()
 
 			try {
-				if (next) $node.fs.mkdirSync( path )
-				else $node.fs.unlinkSync( path )
+				$node.fs.mkdirSync( path )
 			} catch( e: any ) {
 				e.message += '\n' + path
-				return this.$.$mol_fail_hidden(e)
+				this.$.$mol_fail_hidden(e)
 			}
 
-			return true
+		}
+		
+		@ $mol_action
+		drop() {
+			$node.fs.unlinkSync( this.path() )
 		}
 		
 		@ $mol_mem
-		buffer( next? : Uint8Array, force? : $mol_mem_force ) {
+		buffer( next? : Uint8Array ) {
 
 			const path = this.path()
 			if( next === undefined ) {
 
-				this.stat()
+				if( !this.stat() ) return new Uint8Array
 				
 				try {
 
@@ -138,6 +163,15 @@ namespace $ {
 			}
 			
 			this.parent().exists( true )
+			
+			const now = new Date
+			this.stat( {
+				type: 'file',
+				size: next.length,
+				atime: now,
+				mtime: now,
+				ctime: now,
+			}, 'virt' )
 
 			try {
 
@@ -159,6 +193,7 @@ namespace $ {
 			if ( this.type() !== 'dir') return []
 
 			const path = this.path()
+			this.stat()
 
 			try {
 				return $node.fs.readdirSync( path )
@@ -186,7 +221,15 @@ namespace $ {
 				e.message += '\n' + path
 				return this.$.$mol_fail_hidden(e)
 			}
-		}		
+		}
+		
+		open( ... modes: readonly ( keyof typeof $mol_file_mode_open )[] ) {
+			return $node.fs.openSync(
+				this.path(),
+				modes.reduce( ( res, mode )=> res | $mol_file_mode_open[ mode ], 0 ),
+			)
+		}
+
 	}
 
 	$.$mol_file = $mol_file_node

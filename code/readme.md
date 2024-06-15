@@ -2,19 +2,19 @@
 
 Machine readable code input. On Cordova displays button to call native scanner.
 
-## [Online demo](https://mol.js.org/app/demo/-/#demo=mol_code)
+## [Online demo](https://mol.hyoo.ru/#!section=demos/readme/demo=mol_code_demo)
 
 ## Usage example
 
 ```
 <= Product_code $mol_code
 	format \EAN_13
-	value?val <=> product_code?val \
+	value? <=> product_code? \
 ```
 
 ## Properties
 
-**'format() : String'**
+**`format() : String`**
 
 Returns format for code scanning.
 

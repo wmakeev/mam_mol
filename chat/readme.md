@@ -2,13 +2,13 @@
 
 Button to open embedded chat.
 
-## [Online demo](https://mol.js.org/app/demo/-/#demo=mol_chat)
+## [Online demo](https://mol.hyoo.ru/#!section=demos/readme/demo=mol_chat_demo)
 
 ## Usage example
 
 ```
 <= Chat $mol_chat
-	seed <= seed \my-super-duper-id
+	seed <= seed \0_0
 	pages => chat_pages
 ```
 
@@ -16,7 +16,7 @@ Button to open embedded chat.
 
 **`seed() : string`**
 
-Global unique id of chat. Current host name by default.
+Global unique id of chat.
 
 **`pages() : $mol_page[]`**
 

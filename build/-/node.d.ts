@@ -14,6 +14,18 @@ declare namespace $ {
 }
 
 declare namespace $ {
+    function $mol_promise_like(val: any): val is Promise<any>;
+}
+
+declare namespace $ {
+    function $mol_fail(error: any): never;
+}
+
+declare namespace $ {
+    function $mol_fail_hidden(error: any): never;
+}
+
+declare namespace $ {
     type $mol_log3_event<Fields> = {
         [key in string]: unknown;
     } & {
@@ -33,11 +45,6 @@ declare namespace $ {
     function $mol_log3_area_lazy(this: $, event: $mol_log3_event<{}>): () => void;
     let $mol_log3_stack: (() => void)[];
 }
-
-interface $node {
-    [key: string]: any;
-}
-declare var $node: $node;
 
 declare namespace $ {
     const $mol_ambient_ref: unique symbol;
@@ -64,398 +71,31 @@ declare namespace $ {
 }
 
 declare namespace $ {
-    function $mol_fail(error: any): never;
-}
-
-declare namespace $ {
-    function $mol_fail_hidden(error: any): never;
-}
-
-declare namespace $ {
     type $mol_type_writable<T> = {
         -readonly [P in keyof T]: T[P];
     };
 }
 
 declare namespace $ {
+    function $mol_func_name(this: $, func: Function): string;
+    function $mol_func_name_from<Target extends Function>(target: Target, source: Function): Target;
+}
+
+declare namespace $ {
     class $mol_object2 {
         static $: typeof $$;
+        [Symbol.toStringTag]: string;
         [$mol_ambient_ref]: typeof $$;
         get $(): $;
         set $(next: $);
         static create<Instance>(this: new (init?: (instance: any) => void) => Instance, init?: (instance: $mol_type_writable<Instance>) => void): Instance;
         static [Symbol.toPrimitive](): any;
         static toString(): any;
+        static toJSON(): any;
         destructor(): void;
-        [Symbol.toPrimitive](hint: string): any;
-        toString(): any;
-        toJSON(): any;
+        static destructor(): void;
+        toString(): string;
     }
-}
-
-declare namespace $ {
-    function $mol_deprecated(message: string): <Method extends (this: Host, ...args: readonly any[]) => any, Host extends { [key in Field]: Method; }, Field extends keyof Host>(host: Host, field: Field, descr: TypedPropertyDescriptor<Method>) => void;
-}
-
-declare namespace $ {
-    const $mol_tree_convert: unique symbol;
-    type $mol_tree_path = Array<string | number | null>;
-    type $mol_tree_hack = (input: $mol_tree, context: $mol_tree_context) => readonly $mol_tree[];
-    type $mol_tree_context = Record<string, $mol_tree_hack>;
-    type $mol_tree_library = Record<string, $mol_tree_context>;
-    class $mol_tree extends $mol_object2 {
-        readonly type: string;
-        readonly data: string;
-        readonly sub: readonly $mol_tree[];
-        readonly baseUri: string;
-        readonly row: number;
-        readonly col: number;
-        readonly length: number;
-        constructor(config?: Partial<$mol_tree>);
-        static values(str: string, baseUri?: string): $mol_tree[];
-        clone(config?: Partial<$mol_tree>): $mol_tree;
-        make(config: Partial<$mol_tree>): $mol_tree;
-        make_data(value: string, sub?: readonly $mol_tree[]): $mol_tree;
-        make_struct(type: string, sub?: readonly $mol_tree[]): $mol_tree;
-        static fromString(str: string, baseUri?: string): $mol_tree;
-        static fromJSON(json: any, baseUri?: string): $mol_tree;
-        get uri(): string;
-        toString(prefix?: string): string;
-        toJSON(): any;
-        get value(): string;
-        insert(value: $mol_tree, ...path: $mol_tree_path): $mol_tree;
-        select(...path: $mol_tree_path): $mol_tree;
-        filter(path: string[], value?: string): $mol_tree;
-        transform(visit: (stack: $mol_tree[], sub: () => $mol_tree[]) => $mol_tree | null, stack?: $mol_tree[]): $mol_tree | null;
-        hack(context: $mol_tree_context): $mol_tree;
-        error(message: string): Error;
-    }
-}
-
-declare namespace $ {
-    function $mol_log3_node_make(level: keyof Console, output: 'stdout' | 'stderr', type: string, color: keyof typeof $node.colorette): (this: $, event: $mol_log3_event<{}>) => () => void;
-}
-
-declare namespace $ {
-    class $mol_wrapper extends $mol_object2 {
-        static wrap: (task: (...ags: any[]) => any) => (...ags: any[]) => any;
-        static run<Result>(task: () => Result): Result;
-        static func<Args extends any[], Result, Host = void>(func: (this: Host, ...args: Args) => Result): (this: Host, ...args: Args) => Result;
-        static get class(): <Class extends new (...args: any[]) => any>(Class: Class) => Class;
-        static get method(): (obj: object, name: PropertyKey, descr: PropertyDescriptor) => PropertyDescriptor;
-        static get field(): <Host, Field extends keyof Host, Args extends any[], Result>(obj: Host, name: Field, descr: TypedPropertyDescriptor<Result>) => TypedPropertyDescriptor<Result>;
-    }
-}
-
-declare namespace $ {
-    class $mol_after_timeout extends $mol_object2 {
-        delay: number;
-        task: () => void;
-        id: any;
-        constructor(delay: number, task: () => void);
-        destructor(): void;
-    }
-}
-
-declare namespace $ {
-    class $mol_after_frame extends $mol_after_timeout {
-        task: () => void;
-        constructor(task: () => void);
-    }
-}
-
-declare namespace $ {
-    const $mol_conform_stack: any[];
-    function $mol_conform<Target, Source>(target: Target, source: Source): Target;
-    const $mol_conform_handlers: WeakMap<Object, (target: any, source: any) => any>;
-    function $mol_conform_handler<Class>(cl: {
-        new (...args: any[]): Class;
-    }, handler: (target: Class, source: Class) => Class): void;
-    function $mol_conform_array<Value, List extends {
-        [index: number]: Value;
-        length: number;
-    }>(target: List, source: List): List;
-}
-
-declare namespace $ {
-    function $mol_array_trim<Item>(array: Item[]): Item[];
-}
-
-declare namespace $ {
-    function $mol_dev_format_register(config: {
-        header: (val: any, config: any) => any;
-        hasBody: (val: any, config: any) => false;
-    } | {
-        header: (val: any, config: any) => any;
-        hasBody: (val: any, config: any) => boolean;
-        body: (val: any, config: any) => any;
-    }): void;
-    let $mol_dev_format_head: symbol;
-    let $mol_dev_format_body: symbol;
-    function $mol_dev_format_native(obj: any): any;
-    function $mol_dev_format_auto(obj: any): any;
-    function $mol_dev_format_element(element: string, style: object, ...content: any[]): any[];
-    function $mol_dev_format_span(style: object, ...content: any[]): any[];
-    let $mol_dev_format_div: (style: object, ...content: any[]) => any[];
-    let $mol_dev_format_ol: (style: object, ...content: any[]) => any[];
-    let $mol_dev_format_li: (style: object, ...content: any[]) => any[];
-    let $mol_dev_format_table: (style: object, ...content: any[]) => any[];
-    let $mol_dev_format_tr: (style: object, ...content: any[]) => any[];
-    let $mol_dev_format_td: (style: object, ...content: any[]) => any[];
-    let $mol_dev_format_accent: (...args: any[]) => any[];
-    let $mol_dev_format_strong: (...args: any[]) => any[];
-    let $mol_dev_format_string: (...args: any[]) => any[];
-    let $mol_dev_format_shade: (...args: any[]) => any[];
-    let $mol_dev_format_indent: (...args: any[]) => any[];
-}
-
-declare namespace $ {
-    const enum $mol_fiber_status {
-        persist = -3,
-        actual = -2,
-        doubt = -1,
-        obsolete = 0
-    }
-    function $mol_fiber_defer<Value = void>(calculate: () => Value): $mol_fiber<any>;
-    function $mol_fiber_func<This, Args extends any[], Result>(calculate: (this: This, ...args: Args) => Result): (this: This, ...args: Args) => Result;
-    function $mol_fiber_root<Calculate extends (this: This, ...args: any[]) => Result, Result = void, This = void>(calculate: Calculate): Calculate;
-    function $mol_fiber_method<Host extends object, Value>(obj: Host, name: keyof Host, descr: TypedPropertyDescriptor<(this: Host, ...args: any[]) => Value>): PropertyDescriptor;
-    function $mol_fiber_async<Args extends any[], Value>(task: (...args: Args) => Value): (...args: Args) => Promise<Value>;
-    function $mol_fiber_sync<Args extends any[], Value = void, This = void>(request: (this: This, ...args: Args) => PromiseLike<Value>): (...args: Args) => Value;
-    function $mol_fiber_warp(): Promise<void>;
-    function $mol_fiber_fence(func: () => any): any;
-    function $mol_fiber_unlimit<Result>(task: () => Result): Result;
-    class $mol_fiber_solid extends $mol_wrapper {
-        static func<This, Args extends any[], Result>(task: (this: This, ...args: Args) => Result): (this: This, ...args: Args) => Result;
-    }
-    class $mol_fiber<Value = any> extends $mol_wrapper {
-        static logs: boolean;
-        static wrap<Func extends (...args: any[]) => any>(task: Func): (this: ThisParameterType<Func>, ...args: Parameters<Func>) => any;
-        static quant: number;
-        static deadline: number;
-        static liveline: number;
-        static current: $mol_fiber<any> | null;
-        static scheduled: $mol_after_frame | null;
-        static queue: (() => PromiseLike<any>)[];
-        static tick(): Promise<void>;
-        static schedule(): Promise<any>;
-        cursor: $mol_fiber_status;
-        masters: (number | $mol_fiber<any> | undefined)[];
-        calculate: () => Value;
-        _value: Value;
-        get value(): Value;
-        set value(next: Value);
-        _error: Error | PromiseLike<Value> | null;
-        get error(): null | Error | PromiseLike<Value>;
-        set error(next: null | Error | PromiseLike<Value>);
-        schedule(): void;
-        wake(): Value | undefined;
-        push(value: Value): Value;
-        fail(error: Error): Error;
-        wait(promise: PromiseLike<Value>): PromiseLike<Value>;
-        complete(): void;
-        complete_master(master_index: number): void;
-        pull(): void;
-        update(): void;
-        get(): Value;
-        limit(): void;
-        get master(): $mol_fiber;
-        set master(next: $mol_fiber);
-        rescue(master: $mol_fiber, master_index: number): void;
-        obey(master: $mol_fiber, master_index: number): number;
-        lead(slave: $mol_fiber, master_index: number): number;
-        dislead(slave_index: number): void;
-        disobey(master_index: number): void;
-        obsolete_slaves(): void;
-        obsolete(master_index: number): void;
-        forget(): void;
-        abort(): boolean;
-        destructor(): void;
-    }
-}
-
-declare namespace $ {
-    namespace $$ { }
-    const $mol_object_field: unique symbol;
-    class $mol_object extends $mol_object2 {
-        static make<Instance>(this: {
-            new (): Instance;
-        }, config: Partial<Instance>): Instance;
-    }
-}
-
-declare namespace $ {
-    function $mol_atom2_value<Value>(task: () => Value, next?: Value): Value | undefined;
-    class $mol_atom2<Value = any> extends $mol_fiber<Value> {
-        static logs: boolean;
-        static get current(): $mol_atom2<any> | null;
-        static cached: boolean;
-        static cached_next: any;
-        static reap_task: $mol_fiber<any> | null;
-        static reap_queue: $mol_atom2<any>[];
-        static reap(atom: $mol_atom2): void;
-        slaves: (number | $mol_fiber<any> | undefined)[];
-        rescue(master: $mol_atom2, cursor: number): void;
-        subscribe(promise: Promise<unknown>): Promise<void>;
-        get(): Value;
-        pull(): void;
-        get value(): Value;
-        set value(next: Value);
-        get error(): null | Error | PromiseLike<Value>;
-        set error(next: null | Error | PromiseLike<Value>);
-        put(next: Value): Value;
-        complete_master(master_index: number): void;
-        obey(master: $mol_fiber, master_index: number): number;
-        lead(slave: $mol_fiber, master_index: number): number;
-        dislead(slave_index: number): void;
-        obsolete(master_index?: number): void;
-        doubt(master_index?: number): void;
-        obsolete_slaves(): void;
-        doubt_slaves(): void;
-        get fresh(): () => void;
-        get alone(): boolean;
-        get derived(): boolean;
-        destructor(): void;
-    }
-}
-
-declare namespace $ {
-    function $mol_atom2_autorun(calculate: () => any): $mol_atom2<unknown>;
-}
-
-declare namespace $ {
-    type $mol_type_param<Func, Index extends number> = Func extends (...params: infer Params) => any ? Params[Index] : Func extends new (...params: infer Params2) => any ? Params2[Index] : never;
-}
-
-declare namespace $ {
-    type $mol_type_result<Func> = Func extends (...params: any) => infer Result ? Result : Func extends new (...params: any) => infer Result ? Result : never;
-}
-
-declare namespace $ {
-    class $mol_mem_force extends Object {
-        constructor();
-        $mol_mem_force: boolean;
-        static $mol_mem_force: boolean;
-        static toString(): string;
-    }
-    class $mol_mem_force_cache extends $mol_mem_force {
-    }
-    class $mol_mem_force_update extends $mol_mem_force {
-    }
-    class $mol_mem_force_fail extends $mol_mem_force_cache {
-    }
-}
-
-declare namespace $ {
-    let $mol_mem_cached: typeof $mol_atom2_value;
-    function $mol_mem_persist(): void;
-    function $mol_mem<Host extends object, Field extends keyof Host, Prop extends Extract<Host[Field], (next?: any) => any>>(proto: Host, name: Field, descr?: TypedPropertyDescriptor<Prop>): {
-        value: ((this: Host, next?: $mol_type_param<Prop, 0> | undefined, force?: $mol_mem_force | undefined) => any) & {
-            orig: Function;
-        };
-        enumerable?: boolean | undefined;
-        configurable?: boolean | undefined;
-        writable?: boolean | undefined;
-        get?: (() => Prop) | undefined;
-        set?: ((value: Prop) => void) | undefined;
-    };
-}
-
-declare namespace $ {
-    function $mol_key<Value>(value: Value): string | Value;
-}
-
-declare namespace $ {
-    function $mol_mem_key<Host extends object, Field extends keyof Host, Prop extends Extract<Host[Field], (id: any, next?: any) => any>>(proto: Host, name: Field, descr?: TypedPropertyDescriptor<Prop>): any;
-}
-
-declare namespace $ {
-    function $mol_const<Value>(value: Value): {
-        (): Value;
-        '()': Value;
-    };
-}
-
-declare namespace $ {
-    type $mol_charset_encoding = 'utf8' | 'ibm866' | 'iso-8859-2' | 'iso-8859-3' | 'iso-8859-4' | 'iso-8859-5' | 'iso-8859-6' | 'iso-8859-7' | 'iso-8859-8' | 'iso-8859-8i' | 'iso-8859-10' | 'iso-8859-13' | 'iso-8859-14' | 'iso-8859-15' | 'iso-8859-16' | 'koi8-r' | 'koi8-u' | 'koi8-r' | 'macintosh' | 'windows-874' | 'windows-1250' | 'windows-1251' | 'windows-1252' | 'windows-1253' | 'windows-1254' | 'windows-1255' | 'windows-1256' | 'windows-1257' | 'windows-1258' | 'x-mac-cyrillic' | 'gbk' | 'gb18030' | 'hz-gb-2312' | 'big5' | 'euc-jp' | 'iso-2022-jp' | 'shift-jis' | 'euc-kr' | 'iso-2022-kr';
-    function $mol_charset_decode(value: Uint8Array, code?: $mol_charset_encoding): string;
-}
-
-declare namespace $ {
-    function $mol_charset_encode(value: string): Uint8Array;
-}
-
-declare namespace $ {
-    type $mol_file_type = 'file' | 'dir' | 'link';
-    interface $mol_file_stat {
-        type: $mol_file_type;
-        size: number;
-        atime: Date;
-        mtime: Date;
-        ctime: Date;
-    }
-    class $mol_file_not_found extends Error {
-    }
-    abstract class $mol_file extends $mol_object {
-        static absolute(path: string): $mol_file;
-        static relative(path: string): $mol_file;
-        path(): string;
-        parent(): $mol_file;
-        abstract stat(next?: $mol_file_stat, force?: $mol_mem_force): $mol_file_stat;
-        reset(): void;
-        version(): string;
-        abstract ensure(next?: boolean): boolean;
-        watcher(): {
-            destructor(): void;
-        };
-        exists(next?: boolean, force?: $mol_mem_force): boolean;
-        type(): $mol_file_type;
-        name(): string;
-        ext(): string;
-        abstract buffer(next?: Uint8Array, force?: $mol_mem_force): Uint8Array;
-        text(next?: string, force?: $mol_mem_force): string;
-        fail(error: Error): void;
-        buffer_cached(buffer: Uint8Array): void;
-        text_cached(content: string): void;
-        abstract sub(): $mol_file[];
-        abstract resolve(path: string): $mol_file;
-        abstract relate(base?: $mol_file): string;
-        abstract append(next: Uint8Array | string): void;
-        find(include?: RegExp, exclude?: RegExp): $mol_file[];
-        size(): number;
-    }
-}
-
-declare namespace $ {
-    function $mol_compare_array<Value extends ArrayLike<unknown>>(a: Value, b: Value): boolean;
-}
-
-declare namespace $ {
-    class $mol_file_node extends $mol_file {
-        static absolute(path: string): $mol_file_node;
-        static relative(path: string): $mol_file_node;
-        watcher(): {
-            destructor(): void;
-        };
-        stat(next?: $mol_file_stat, force?: $mol_mem_force): $mol_file_stat;
-        ensure(next?: boolean): boolean;
-        buffer(next?: Uint8Array, force?: $mol_mem_force): Uint8Array;
-        sub(): $mol_file[];
-        resolve(path: string): $mol_file;
-        relate(base?: $mol_file): any;
-        append(next: Uint8Array | string): undefined;
-    }
-}
-
-declare namespace $ {
-    function $mol_env(): Record<string, string | undefined>;
-}
-
-declare namespace $ {
-}
-
-declare namespace $ {
-    function $mol_exec(this: $, dir: string, command: string, ...args: string[]): any;
 }
 
 declare namespace $ {
@@ -470,7 +110,7 @@ declare namespace $ {
         static begin(uri: string, source?: string): $mol_span;
         static end(uri: string, source: string): $mol_span;
         static entire(uri: string, source: string): $mol_span;
-        toString(): any;
+        toString(): string;
         toJSON(): {
             uri: string;
             row: number;
@@ -482,6 +122,10 @@ declare namespace $ {
         after(length?: number): $mol_span;
         slice(begin: number, end?: number): $mol_span;
     }
+}
+
+declare namespace $ {
+    function $mol_tree2_to_string(this: $, tree: $mol_tree2): string;
 }
 
 declare namespace $ {
@@ -507,6 +151,10 @@ declare namespace $ {
         insert(value: $mol_tree2 | null, ...path: $mol_tree2_path): $mol_tree2;
         select(...path: $mol_tree2_path): $mol_tree2;
         filter(path: string[], value?: string): $mol_tree2;
+        hack_self<Context extends {
+            span?: $mol_span;
+            [key: string]: unknown;
+        } = {}>(belt: $mol_tree2_belt<Context>, context?: Context): readonly $mol_tree2[];
         hack<Context extends {
             span?: $mol_span;
             [key: string]: unknown;
@@ -529,6 +177,418 @@ declare namespace $ {
 
 declare namespace $ {
     function $mol_tree2_from_string(this: $, str: string, uri?: string): $mol_tree2;
+}
+
+declare namespace $ {
+    function $mol_tree2_from_json(json: any, span?: $mol_span): $mol_tree2;
+}
+
+declare namespace $ {
+    class $mol_term_color {
+        static reset: (str: string) => string;
+        static bold: (str: string) => string;
+        static italic: (str: string) => string;
+        static underline: (str: string) => string;
+        static inverse: (str: string) => string;
+        static hidden: (str: string) => string;
+        static strike: (str: string) => string;
+        static gray: (str: string) => string;
+        static red: (str: string) => string;
+        static green: (str: string) => string;
+        static yellow: (str: string) => string;
+        static blue: (str: string) => string;
+        static magenta: (str: string) => string;
+        static cyan: (str: string) => string;
+        static Gray: (str: string) => string;
+        static Red: (str: string) => string;
+        static Green: (str: string) => string;
+        static Yellow: (str: string) => string;
+        static Blue: (str: string) => string;
+        static Magenta: (str: string) => string;
+        static Cyan: (str: string) => string;
+        static ansi(open: number, close: number): (str: string) => string;
+    }
+}
+
+declare namespace $ {
+    function $mol_log3_node_make(level: keyof Console, output: 'stdout' | 'stderr', type: string, color: (str: string) => string): (this: $, event: $mol_log3_event<{}>) => () => void;
+}
+
+declare namespace $ {
+    enum $mol_wire_cursor {
+        stale = -1,
+        doubt = -2,
+        fresh = -3,
+        final = -4
+    }
+}
+
+declare namespace $ {
+    class $mol_wire_pub extends Object {
+        data: unknown[];
+        static get [Symbol.species](): ArrayConstructor;
+        protected sub_from: number;
+        get sub_list(): readonly $mol_wire_sub[];
+        get sub_empty(): boolean;
+        sub_on(sub: $mol_wire_pub, pub_pos: number): number;
+        sub_off(sub_pos: number): void;
+        reap(): void;
+        promote(): void;
+        fresh(): void;
+        complete(): void;
+        get incompleted(): boolean;
+        emit(quant?: $mol_wire_cursor): void;
+        peer_move(from_pos: number, to_pos: number): void;
+        peer_repos(peer_pos: number, self_pos: number): void;
+    }
+}
+
+declare namespace $ {
+    interface $mol_wire_sub extends $mol_wire_pub {
+        temp: boolean;
+        track_on(): $mol_wire_sub | null;
+        track_next(pub?: $mol_wire_pub): $mol_wire_pub | null;
+        pub_off(pub_pos: number): void;
+        track_cut(sub: $mol_wire_pub | null): void;
+        track_off(sub: $mol_wire_pub | null): void;
+        absorb(quant: $mol_wire_cursor): void;
+        destructor(): void;
+    }
+}
+
+declare namespace $ {
+    let $mol_wire_auto_sub: $mol_wire_sub | null;
+    function $mol_wire_auto(next?: $mol_wire_sub | null): $mol_wire_sub | null;
+    const $mol_wire_affected: (number | $mol_wire_sub)[];
+}
+
+declare namespace $ {
+    function $mol_dev_format_register(config: {
+        header: (val: any, config: any) => any;
+        hasBody: (val: any, config: any) => false;
+    } | {
+        header: (val: any, config: any) => any;
+        hasBody: (val: any, config: any) => boolean;
+        body: (val: any, config: any) => any;
+    }): void;
+    let $mol_dev_format_head: symbol;
+    let $mol_dev_format_body: symbol;
+    function $mol_dev_format_native(obj: any): any[];
+    function $mol_dev_format_auto(obj: any): any[];
+    function $mol_dev_format_element(element: string, style: object, ...content: any[]): any[];
+    function $mol_dev_format_span(style: object, ...content: any[]): any[];
+    let $mol_dev_format_div: (style: object, ...content: any[]) => any[];
+    let $mol_dev_format_ol: (style: object, ...content: any[]) => any[];
+    let $mol_dev_format_li: (style: object, ...content: any[]) => any[];
+    let $mol_dev_format_table: (style: object, ...content: any[]) => any[];
+    let $mol_dev_format_tr: (style: object, ...content: any[]) => any[];
+    let $mol_dev_format_td: (style: object, ...content: any[]) => any[];
+    let $mol_dev_format_accent: (...args: any[]) => any[];
+    let $mol_dev_format_strong: (...args: any[]) => any[];
+    let $mol_dev_format_string: (...args: any[]) => any[];
+    let $mol_dev_format_shade: (...args: any[]) => any[];
+    let $mol_dev_format_indent: (...args: any[]) => any[];
+}
+
+declare namespace $ {
+    class $mol_wire_pub_sub extends $mol_wire_pub implements $mol_wire_sub {
+        protected pub_from: number;
+        protected cursor: $mol_wire_cursor;
+        get temp(): boolean;
+        get pub_list(): $mol_wire_pub[];
+        track_on(): $mol_wire_sub | null;
+        promote(): void;
+        track_next(pub?: $mol_wire_pub): $mol_wire_pub | null;
+        track_off(sub: $mol_wire_sub | null): void;
+        pub_off(sub_pos: number): void;
+        destructor(): void;
+        track_cut(): void;
+        complete(): void;
+        complete_pubs(): void;
+        absorb(quant?: $mol_wire_cursor): void;
+        get pub_empty(): boolean;
+    }
+}
+
+declare namespace $ {
+    class $mol_after_timeout extends $mol_object2 {
+        delay: number;
+        task: () => void;
+        id: any;
+        constructor(delay: number, task: () => void);
+        destructor(): void;
+    }
+}
+
+declare namespace $ {
+    abstract class $mol_wire_fiber<Host, Args extends readonly unknown[], Result> extends $mol_wire_pub_sub {
+        readonly task: (this: Host, ...args: Args) => Result;
+        readonly host?: Host | undefined;
+        static warm: boolean;
+        static planning: Set<$mol_wire_fiber<any, any, any>>;
+        static reaping: Set<$mol_wire_fiber<any, any, any>>;
+        static plan_task: $mol_after_timeout | null;
+        static plan(): void;
+        static sync(): void;
+        [Symbol.toStringTag]: string;
+        cache: Result | Error | Promise<Result | Error>;
+        get args(): Args;
+        result(): Result | undefined;
+        get incompleted(): boolean;
+        field(): string;
+        constructor(id: string, task: (this: Host, ...args: Args) => Result, host?: Host | undefined, args?: Args);
+        plan(): this;
+        reap(): void;
+        toString(): string;
+        toJSON(): string;
+        get $(): any;
+        emit(quant?: $mol_wire_cursor): void;
+        fresh(): this | undefined;
+        refresh(): void;
+        abstract put(next: Result | Error | Promise<Result | Error>): Result | Error | Promise<Result | Error>;
+        sync(): Awaited<Result>;
+        async(): Promise<Result>;
+        step(): Promise<null>;
+    }
+}
+
+declare namespace $ {
+    let $mol_compare_deep_cache: WeakMap<any, WeakMap<any, boolean>>;
+    function $mol_compare_deep<Value>(left: Value, right: Value): boolean;
+}
+
+declare namespace $ {
+    class $mol_wire_task<Host, Args extends readonly unknown[], Result> extends $mol_wire_fiber<Host, Args, Result> {
+        static getter<Host, Args extends readonly unknown[], Result>(task: (this: Host, ...args: Args) => Result): (host: Host, args: Args) => $mol_wire_task<Host, Args, Result>;
+        get temp(): boolean;
+        complete(): void;
+        put(next: Result | Error | Promise<Result | Error>): Error | Result | Promise<Error | Result>;
+    }
+}
+
+declare namespace $ {
+    export function $mol_wire_async<Host extends object>(obj: Host): ObjectOrFunctionResultPromisify<Host>;
+    type FunctionResultPromisify<Some> = Some extends (...args: infer Args) => infer Res ? Res extends PromiseLike<unknown> ? Some : (...args: Args) => Promise<Res> : Some;
+    type MethodsResultPromisify<Host extends Object> = {
+        [K in keyof Host]: FunctionResultPromisify<Host[K]>;
+    };
+    type ObjectOrFunctionResultPromisify<Some> = (Some extends (...args: any) => unknown ? FunctionResultPromisify<Some> : {}) & (Some extends Object ? MethodsResultPromisify<Some> : Some);
+    export {};
+}
+
+declare namespace $ {
+    namespace $$ { }
+    const $mol_object_field: unique symbol;
+    class $mol_object extends $mol_object2 {
+        static make<This extends typeof $mol_object>(this: This, config: Partial<InstanceType<This>>): InstanceType<This>;
+    }
+}
+
+declare namespace $ {
+    function $mol_guid(length?: number, exists?: (id: string) => boolean): string;
+}
+
+declare namespace $ {
+    const $mol_key_store: WeakMap<object, string>;
+    function $mol_key<Value>(value: Value): string;
+}
+
+declare namespace $ {
+    class $mol_after_frame extends $mol_after_timeout {
+        task: () => void;
+        constructor(task: () => void);
+    }
+}
+
+declare namespace $ {
+    function $mol_wire_method<Host extends object, Args extends readonly any[]>(host: Host, field: PropertyKey, descr?: TypedPropertyDescriptor<(...args: Args) => any>): {
+        value: (this: Host, ...args: Args) => any;
+        enumerable?: boolean | undefined;
+        configurable?: boolean | undefined;
+        writable?: boolean | undefined;
+        get?: (() => (...args: Args) => any) | undefined;
+        set?: ((value: (...args: Args) => any) => void) | undefined;
+    };
+}
+
+declare namespace $ {
+    type $mol_type_tail<Tuple extends readonly any[]> = ((...tail: Tuple) => any) extends ((head: any, ...tail: infer Tail) => any) ? Tail : never;
+}
+
+declare namespace $ {
+    type $mol_type_foot<Tuple extends readonly any[]> = Tuple['length'] extends 0 ? never : Tuple[$mol_type_tail<Tuple>['length']];
+}
+
+declare namespace $ {
+    function $mol_fail_catch(error: unknown): boolean;
+}
+
+declare namespace $ {
+    function $mol_fail_log(error: unknown): boolean;
+}
+
+declare namespace $ {
+    class $mol_wire_atom<Host, Args extends readonly unknown[], Result> extends $mol_wire_fiber<Host, Args, Result> {
+        static solo<Host, Args extends readonly unknown[], Result>(host: Host, task: (this: Host, ...args: Args) => Result): $mol_wire_atom<Host, Args, Result>;
+        static plex<Host, Args extends readonly unknown[], Result>(host: Host, task: (this: Host, ...args: Args) => Result, key: Args[0]): $mol_wire_atom<Host, Args, Result>;
+        static watching: Set<$mol_wire_atom<any, any, any>>;
+        static watcher: $mol_after_frame | null;
+        static watch(): void;
+        watch(): void;
+        resync(args: Args): Error | Result | Promise<Error | Result>;
+        once(): Awaited<Result>;
+        channel(): ((next?: $mol_type_foot<Args>) => Awaited<Result>) & {
+            atom: $mol_wire_atom<Host, Args, Result>;
+        };
+        destructor(): void;
+        put(next: Result | Error | Promise<Result | Error>): Error | Result | Promise<Error | Result>;
+    }
+}
+
+declare namespace $ {
+    export function $mol_wire_solo<Args extends any[]>(host: object, field: string, descr?: TypedPropertyDescriptor<(...args: Args) => any>): TypedPropertyDescriptor<(...args: First_optional<Args>) => any>;
+    type First_optional<Args extends any[]> = Args extends [] ? [] : [Args[0] | undefined, ...$mol_type_tail<Args>];
+    export {};
+}
+
+declare namespace $ {
+    function $mol_wire_plex<Args extends [any, ...any[]]>(host: object, field: string, descr?: TypedPropertyDescriptor<(...args: Args) => any>): {
+        value: (this: typeof host, ...args: Args) => any;
+        enumerable?: boolean | undefined;
+        configurable?: boolean | undefined;
+        writable?: boolean | undefined;
+        get?: (() => (...args: Args) => any) | undefined;
+        set?: ((value: (...args: Args) => any) => void) | undefined;
+    };
+}
+
+declare namespace $ {
+    let $mol_mem: typeof $mol_wire_solo;
+    let $mol_mem_key: typeof $mol_wire_plex;
+}
+
+declare namespace $ {
+    type $mol_charset_encoding = 'utf8' | 'utf-16le' | 'utf-16be' | 'ibm866' | 'iso-8859-2' | 'iso-8859-3' | 'iso-8859-4' | 'iso-8859-5' | 'iso-8859-6' | 'iso-8859-7' | 'iso-8859-8' | 'iso-8859-8i' | 'iso-8859-10' | 'iso-8859-13' | 'iso-8859-14' | 'iso-8859-15' | 'iso-8859-16' | 'koi8-r' | 'koi8-u' | 'koi8-r' | 'macintosh' | 'windows-874' | 'windows-1250' | 'windows-1251' | 'windows-1252' | 'windows-1253' | 'windows-1254' | 'windows-1255' | 'windows-1256' | 'windows-1257' | 'windows-1258' | 'x-mac-cyrillic' | 'gbk' | 'gb18030' | 'hz-gb-2312' | 'big5' | 'euc-jp' | 'iso-2022-jp' | 'shift-jis' | 'euc-kr' | 'iso-2022-kr';
+}
+
+declare namespace $ {
+    function $mol_charset_decode(buffer: BufferSource, encoding?: $mol_charset_encoding): string;
+}
+
+interface $node {
+    [key: string]: any;
+}
+declare var $node: $node;
+declare const cache: Map<string, any>;
+
+declare namespace $ {
+    function $mol_env(): Record<string, string | undefined>;
+}
+
+declare namespace $ {
+}
+
+/// <reference types="node" />
+/// <reference types="node" />
+declare namespace $ {
+    function $mol_exec(this: $, dir: string, command: string, ...args: string[]): import("child_process").SpawnSyncReturns<Buffer>;
+}
+
+declare namespace $ {
+    function $mol_charset_encode(value: string): Uint8Array;
+}
+
+declare namespace $ {
+    type $mol_file_type = 'file' | 'dir' | 'link';
+    interface $mol_file_stat {
+        type: $mol_file_type;
+        size: number;
+        atime: Date;
+        mtime: Date;
+        ctime: Date;
+    }
+    class $mol_file_not_found extends Error {
+    }
+    abstract class $mol_file extends $mol_object {
+        static absolute(path: string): $mol_file;
+        static relative(path: string): $mol_file;
+        static base: string;
+        path(): string;
+        parent(): $mol_file;
+        abstract stat(next?: $mol_file_stat | null, virt?: 'virt'): $mol_file_stat | null;
+        reset(): void;
+        version(): string;
+        abstract ensure(): void;
+        abstract drop(): void;
+        watcher(): {
+            destructor(): void;
+        };
+        exists(next?: boolean): boolean;
+        type(): "" | $mol_file_type;
+        name(): string;
+        ext(): string;
+        abstract buffer(next?: Uint8Array): Uint8Array;
+        text(next?: string, virt?: 'virt'): string;
+        abstract sub(): $mol_file[];
+        abstract resolve(path: string): $mol_file;
+        abstract relate(base?: $mol_file): string;
+        abstract append(next: Uint8Array | string): void;
+        find(include?: RegExp, exclude?: RegExp): $mol_file[];
+        size(): number;
+        open(...modes: readonly ('create' | 'exists_truncate' | 'exists_fail' | 'read_only' | 'write_only' | 'read_write' | 'append')[]): number;
+        toJSON(): string;
+    }
+}
+
+declare namespace $ {
+    function $mol_const<Value>(value: Value): {
+        (): Value;
+        '()': Value;
+    };
+}
+
+declare namespace $ {
+    let $mol_action: typeof $mol_wire_method;
+}
+
+declare namespace $ {
+    function $mol_wire_probe<Value>(task: () => Value, def?: Value): Value | undefined;
+}
+
+declare namespace $ {
+    let $mol_mem_cached: typeof $mol_wire_probe;
+}
+
+declare namespace $ {
+    function $mol_compare_array<Value extends ArrayLike<unknown>>(a: Value, b: Value): boolean;
+}
+
+declare namespace $ {
+    enum $mol_file_mode_open {
+        create,
+        exists_truncate,
+        exists_fail,
+        read_only,
+        write_only,
+        read_write,
+        append
+    }
+    class $mol_file_node extends $mol_file {
+        static absolute(path: string): $mol_file_node;
+        static relative(path: string): $mol_file_node;
+        watcher(): {
+            destructor(): void;
+        };
+        stat(next?: $mol_file_stat | null, virt?: 'virt'): $mol_file_stat | null;
+        ensure(): void;
+        drop(): void;
+        buffer(next?: Uint8Array): Uint8Array;
+        sub(): $mol_file[];
+        resolve(path: string): $mol_file;
+        relate(base?: $mol_file): string;
+        append(next: Uint8Array | string): undefined;
+        open(...modes: readonly (keyof typeof $mol_file_mode_open)[]): number;
+    }
 }
 
 declare namespace $ {
@@ -558,53 +618,7 @@ declare namespace $ {
 }
 
 declare namespace $ {
-    type $mol_view_tree2_locales = Record<string, string>;
-    class $mol_view_tree2_context extends $mol_object2 {
-        protected parents: readonly $mol_view_tree2_prop[];
-        protected locales: $mol_view_tree2_locales;
-        protected methods: $mol_tree2[];
-        readonly types: boolean;
-        protected added_nodes: Map<string, {
-            src: $mol_tree2;
-            name: $mol_tree2;
-            key: $mol_tree2 | undefined;
-            next: $mol_tree2 | undefined;
-        }>;
-        protected array?: $mol_tree2 | undefined;
-        constructor($: $, parents: readonly $mol_view_tree2_prop[], locales: $mol_view_tree2_locales, methods: $mol_tree2[], types?: boolean, added_nodes?: Map<string, {
-            src: $mol_tree2;
-            name: $mol_tree2;
-            key: $mol_tree2 | undefined;
-            next: $mol_tree2 | undefined;
-        }>, array?: $mol_tree2 | undefined);
-        protected clone(prefixes: readonly $mol_view_tree2_prop[], array?: $mol_tree2): $mol_view_tree2_context;
-        parent(prefix: $mol_view_tree2_prop): $mol_view_tree2_context;
-        root(): $mol_view_tree2_context;
-        locale_disable(array: $mol_tree2): $mol_view_tree2_context;
-        get_method({ name, src, key, next }: $mol_view_tree2_prop): {
-            src: $mol_tree2;
-            name: $mol_tree2;
-            key: $mol_tree2 | undefined;
-            next: $mol_tree2 | undefined;
-        } | undefined;
-        check_scope_vars({ name, key, next }: $mol_view_tree2_prop): undefined;
-        index(owner: $mol_view_tree2_prop): number;
-        method(index: number, method: $mol_tree2[]): void;
-        protected locale_nodes: Map<string, $mol_tree2>;
-        locale(operator: $mol_tree2): $mol_tree2;
-    }
-}
-
-declare namespace $ {
     function $mol_view_tree2_normalize(this: $, defs: $mol_tree2): $mol_tree2;
-}
-
-declare namespace $ {
-    function $mol_view_tree2_class_super(this: $, klass: $mol_tree2): $mol_tree2;
-}
-
-declare namespace $ {
-    function $mol_view_tree2_class_props(this: $, klass: $mol_tree2): $mol_tree2[];
 }
 
 declare namespace $ {
@@ -612,7 +626,9 @@ declare namespace $ {
 }
 
 declare namespace $ {
-    type $mol_type_merge<Intersection> = Intersection extends (...a: any[]) => any ? Intersection : Intersection extends new (...a: any[]) => any ? Intersection : Intersection extends object ? $mol_type_merge_object<Intersection> extends Intersection ? unknown extends $mol_type_equals<$mol_type_merge_object<Intersection>, Intersection> ? Intersection : {
+    type $mol_type_merge<Intersection> = Intersection extends (...a: any[]) => any ? Intersection : Intersection extends new (...a: any[]) => any ? Intersection : Intersection extends object ? $mol_type_merge_object<Intersection> extends Intersection ? unknown extends $mol_type_equals<{
+        [Key in keyof Intersection]: Intersection[Key];
+    }, Intersection> ? Intersection : {
         [Key in keyof Intersection]: $mol_type_merge<Intersection[Key]>;
     } : Intersection : Intersection;
     type $mol_type_merge_object<Intersection> = {
@@ -660,22 +676,24 @@ declare namespace $ {
     export class $mol_regexp<Groups extends Record<string, string>> extends RegExp {
         readonly groups: (Extract<keyof Groups, string>)[];
         constructor(source: string, flags?: string, groups?: (Extract<keyof Groups, string>)[]);
-        [Symbol.matchAll](str: string): IterableIterator<$mol_type_override<RegExpExecArray, {
+        [Symbol.matchAll](str: string): IterableIterator<RegExpMatchArray & $mol_type_override<RegExpMatchArray, {
             groups?: {
                 [key in keyof Groups]: string;
             };
         }>>;
-        [Symbol.match](str: string): null | string[];
+        [Symbol.match](str: string): null | RegExpMatchArray;
         [Symbol.split](str: string): string[];
         test(str: string): boolean;
-        exec(str: string): $mol_type_override<RegExpExecArray, {
+        exec(str: string): RegExpExecArray & $mol_type_override<RegExpExecArray, {
             groups?: {
                 [key in keyof Groups]: string;
             };
         }> | null;
         generate(params: Groups_to_params<Groups>): string | null;
+        get native(): RegExp;
         static repeat<Source extends $mol_regexp_source>(source: Source, min?: number, max?: number): $mol_regexp<$mol_regexp_groups<Source>>;
         static repeat_greedy<Source extends $mol_regexp_source>(source: Source, min?: number, max?: number): $mol_regexp<$mol_regexp_groups<Source>>;
+        static vary<Sources extends readonly $mol_regexp_source[]>(sources: Sources): $mol_regexp<$mol_regexp_groups<Sources[number]>>;
         static optional<Source extends $mol_regexp_source>(source: Source): $mol_regexp<$mol_regexp_groups<Source>>;
         static force_after(source: $mol_regexp_source): $mol_regexp<Record<string, string>>;
         static forbid_after(source: $mol_regexp_source): $mol_regexp<Record<string, string>>;
@@ -709,26 +727,6 @@ declare namespace $ {
 }
 
 declare namespace $ {
-    function $mol_view_tree2_prop_split(this: $, src: $mol_tree2): {
-        src: $mol_tree2;
-        name: $mol_tree2;
-        key: $mol_tree2 | undefined;
-        next: $mol_tree2 | undefined;
-    };
-}
-
-declare namespace $ {
-    type $mol_view_tree2_prop = ReturnType<typeof $mol_view_tree2_prop_split>;
-    function $mol_view_tree2_prop_name(this: $, prop: $mol_tree2): string;
-    function $mol_view_tree2_prop_key(this: $, prop: $mol_tree2): string | undefined;
-    function $mol_view_tree2_prop_next(this: $, prop: $mol_tree2): string | undefined;
-}
-
-declare namespace $ {
-    function $mol_view_tree2_prop_quote(name: $mol_tree2): $mol_tree2;
-}
-
-declare namespace $ {
     let $mol_view_tree2_prop_signature: $mol_regexp<{
         readonly name: string;
         readonly key: string;
@@ -737,60 +735,43 @@ declare namespace $ {
 }
 
 declare namespace $ {
-    function $mol_tree2_text_to_string(this: $, text: $mol_tree2): string;
-}
-
-declare namespace $ {
-    function $mol_view_tree2_bind_both_parts(this: $, operator: $mol_tree2): {
-        owner_parts: {
-            src: $mol_tree2;
-            name: $mol_tree2;
-            key: $mol_tree2 | undefined;
-            next: $mol_tree2 | undefined;
-        };
-        default_value: $mol_tree2 | undefined;
+    function $mol_view_tree2_prop_parts(this: $, prop: $mol_tree2): {
+        name: string;
+        key: string;
+        next: string;
     };
 }
 
 declare namespace $ {
-    function $mol_view_tree2_bind_left_parts(this: $, operator: $mol_tree2, having_parts?: $mol_view_tree2_prop): {
-        default_value: $mol_tree2 | undefined;
-        owner_call_parts: {
-            src: $mol_tree2;
-            name: $mol_tree2;
-            key: $mol_tree2 | undefined;
-            next: $mol_tree2 | undefined;
-        };
-        owner_parts: {
-            src: $mol_tree2;
-            name: $mol_tree2;
-            key: $mol_tree2 | undefined;
-            next: $mol_tree2 | undefined;
-        };
-    };
+    function $mol_view_tree2_prop_quote(name: $mol_tree2): $mol_tree2;
 }
 
 declare namespace $ {
-    function $mol_view_tree2_bind_right_parts(this: $, operator: $mol_tree2, having_parts: $mol_view_tree2_prop, factory: $mol_view_tree2_prop): {
-        owner_parts: {
-            src: $mol_tree2;
-            name: $mol_tree2;
-            key: $mol_tree2 | undefined;
-            next: $mol_tree2 | undefined;
-        };
-    };
+    function $mol_view_tree2_class_match(klass?: $mol_tree2): boolean;
 }
 
 declare namespace $ {
-    function $mol_view_tree2_ts_bind_both(this: $, operator: $mol_tree2, context: $mol_view_tree2_context): $mol_tree2[];
+    function $mol_view_tree2_class_super(this: $, klass: $mol_tree2): $mol_tree2;
 }
 
 declare namespace $ {
-    function $mol_view_tree2_ts_bind_left(this: $, operator: $mol_tree2, context: $mol_view_tree2_context, having_parts?: $mol_view_tree2_prop): $mol_tree2[];
+    function $mol_view_tree2_class_props(this: $, klass: $mol_tree2): $mol_tree2[];
 }
 
 declare namespace $ {
-    function $mol_view_tree2_ts_bind_right(this: $, operator: $mol_tree2, having_parts: $mol_view_tree2_prop, factory: $mol_view_tree2_prop, context: $mol_view_tree2_context): undefined;
+    function $mol_view_tree2_value_type(this: $, val: $mol_tree2): "object" | "string" | "number" | "null" | "bool" | "dict" | "locale" | "get" | "bind" | "put" | "list";
+}
+
+declare namespace $ {
+    function $mol_view_tree2_value(this: $, value: $mol_tree2): $mol_tree2;
+}
+
+declare namespace $ {
+    function $mol_view_tree2_value_number(type: string): boolean | RegExpMatchArray;
+}
+
+declare namespace $ {
+    function $mol_tree2_js_to_text(this: $, js: $mol_tree2): $mol_tree2;
 }
 
 declare namespace $ {
@@ -801,6 +782,33 @@ declare namespace $ {
 }
 
 declare namespace $ {
+    function $mol_wire_solid(): void;
+}
+
+declare namespace $ {
+    let $mol_mem_persist: typeof $mol_wire_solid;
+}
+
+declare namespace $ {
+    export function $mol_wire_sync<Host extends object>(obj: Host): ObjectOrFunctionResultAwaited<Host>;
+    type FunctionResultAwaited<Some> = Some extends (...args: infer Args) => infer Res ? (...args: Args) => Awaited<Res> : Some;
+    type MethodsResultAwaited<Host extends Object> = {
+        [K in keyof Host]: FunctionResultAwaited<Host[K]>;
+    };
+    type ObjectOrFunctionResultAwaited<Some> = (Some extends (...args: any) => unknown ? FunctionResultAwaited<Some> : {}) & (Some extends Object ? MethodsResultAwaited<Some> : Some);
+    export {};
+}
+
+declare namespace $ {
+    class $mol_storage extends $mol_object2 {
+        static native(): StorageManager;
+        static persisted(next?: boolean, cache?: 'cache'): boolean;
+        static estimate(): StorageEstimate;
+        static dir(): FileSystemDirectoryHandle;
+    }
+}
+
+declare namespace $ {
     class $mol_state_local<Value> extends $mol_object {
         static 'native()': Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
         static native(): Storage | {
@@ -808,9 +816,17 @@ declare namespace $ {
             setItem(key: string, value: string): void;
             removeItem(key: string): void;
         };
-        static value<Value>(key: string, next?: Value, force?: $mol_mem_force): Value | null;
+        static changes(next?: StorageEvent): StorageEvent | undefined;
+        static value<Value>(key: string, next?: Value | null): Value | null;
         prefix(): string;
         value(key: string, next?: Value): Value | null;
+    }
+}
+
+declare namespace $ {
+    class $mol_state_local_node<Value> extends $mol_state_local<Value> {
+        static dir(): $mol_file;
+        static value<Value>(key: string, next?: Value | null): Value | null;
     }
 }
 
@@ -829,72 +845,50 @@ declare namespace $ {
 }
 
 declare namespace $ {
-    function $mol_view_tree2_value_type(this: $, val: $mol_tree2): "string" | "object" | "number" | "get" | "null" | "locale" | "bool" | "dict" | "bind" | "put" | "list";
+    function $mol_guard_defined<T>(value: T): value is NonNullable<T>;
 }
 
 declare namespace $ {
-    function $mol_view_tree2_value(this: $, value: $mol_tree2): $mol_tree2;
+    function $mol_view_tree2_to_js(this: $, descr: $mol_tree2): $mol_tree2;
 }
 
 declare namespace $ {
-    function $mol_view_tree2_ts_class(this: $, klass: $mol_tree2, locales: $mol_view_tree2_locales): $mol_tree2;
+    function $mol_tree2_text_to_string(this: $, text: $mol_tree2): string;
 }
 
 declare namespace $ {
-    function $mol_view_tree2_ts_comment(this: $, item: $mol_tree2): $mol_tree2[];
-    function $mol_view_tree2_ts_comment_doc(this: $, item: $mol_tree2): $mol_tree2[];
+    function $mol_vlq_encode(val: number): string;
 }
 
 declare namespace $ {
-    function $mol_view_tree2_ts_module(this: $, tree2_module: $mol_tree2, locales: $mol_view_tree2_locales): $mol_tree2;
-}
-
-declare namespace $ {
-    function $mol_view_tree2_ts_compile(this: $, tree2_module: $mol_tree2): {
-        script: string;
-        locales: $mol_view_tree2_locales;
-    };
-}
-
-declare namespace $ {
-    function $mol_view_tree2_ts_function_declaration({ name, key, next }: Pick<$mol_view_tree2_prop, 'name' | 'key' | 'next'>, types?: boolean): $mol_tree2;
-    function $mol_view_tree2_ts_function_call({ name, key, next }: Pick<$mol_view_tree2_prop, 'name' | 'key' | 'next'>): $mol_tree2;
-}
-
-declare namespace $ {
-    function $mol_view_tree2_ts_spread(this: $, spread_prop: $mol_tree2): $mol_tree2;
-    class $mol_view_tree2_ts_spread_factory extends $mol_object2 {
-        protected prop_parts?: {
-            src: $mol_tree2;
-            name: $mol_tree2;
-            key: $mol_tree2 | undefined;
-            next: $mol_tree2 | undefined;
-        } | undefined;
-        protected super_spread: $mol_tree2 | undefined;
-        constructor($: $, prop_parts?: {
-            src: $mol_tree2;
-            name: $mol_tree2;
-            key: $mol_tree2 | undefined;
-            next: $mol_tree2 | undefined;
-        } | undefined);
-        create(prop: $mol_tree2): $mol_tree2;
+    type $mol_sourcemap_segment = [number] | [number, number, number, number] | [number, number, number, number, number];
+    type $mol_sourcemap_line = $mol_sourcemap_segment[];
+    type $mol_sourcemap_mappings = $mol_sourcemap_line[];
+    interface $mol_sourcemap_raw {
+        version: number;
+        sources: string[];
+        names?: string[];
+        sourceRoot?: string;
+        sourcesContent?: (string | null)[];
+        mappings: string | $mol_sourcemap_line[];
+        file?: string;
     }
 }
 
 declare namespace $ {
-    function $mol_view_tree2_ts_locale(operator: $mol_tree2, context: $mol_view_tree2_context): $mol_tree2[];
+    function $mol_tree2_text_to_sourcemap(this: $, tree: $mol_tree2): $mol_sourcemap_raw;
 }
 
 declare namespace $ {
-    function $mol_view_tree2_ts_value(this: $, src: $mol_tree2): $mol_tree2[];
+    type $mol_type_enforce<Actual extends Expected, Expected> = Actual;
 }
 
 declare namespace $ {
-    function $mol_view_tree2_ts_dictionary(this: $, dictionary: $mol_tree2, dictionary_context: $mol_view_tree2_context, super_method?: $mol_view_tree2_prop): $mol_tree2[];
+    function $mol_view_tree2_to_dts(this: $, tree: $mol_tree2): $mol_tree2;
 }
 
 declare namespace $ {
-    function $mol_view_tree2_ts_factory(this: $, klass: $mol_tree2, factory: $mol_view_tree2_prop, factory_context: $mol_view_tree2_context): $mol_tree2;
+    function $mol_view_tree2_to_locale(this: $, module: $mol_tree2): Record<string, string>;
 }
 
 declare namespace $ {
@@ -902,38 +896,60 @@ declare namespace $ {
         nodes: Set<Node>;
         edges_out: Map<Node, Map<Node, Edge>>;
         edges_in: Map<Node, Map<Node, Edge>>;
-        link_out(from: Node, to: Node, edge: Edge): void;
-        link_in(to: Node, from: Node, edge: Edge): void;
-        edge_out(from: Node, to: Node): NonNullable<Edge> | null;
-        edge_in(to: Node, from: Node): NonNullable<Edge> | null;
         link(from: Node, to: Node, edge: Edge): void;
         unlink(from: Node, to: Node): void;
+        link_out(from: Node, to: Node, edge: Edge): void;
+        link_in(to: Node, from: Node, edge: Edge): void;
+        edge(from: Node, to: Node): NonNullable<Edge> | null;
+        edge_out(from: Node, to: Node): NonNullable<Edge> | null;
+        edge_in(to: Node, from: Node): NonNullable<Edge> | null;
         acyclic(get_weight: (edge: Edge) => number): void;
         get sorted(): Set<Node>;
+        get roots(): Node[];
+        nodes_depth(select: (left: number, right: number) => number): Map<Node, number>;
+        depth_nodes(select: (left: number, right: number) => number): Node[][];
     }
 }
 
 declare namespace $ {
-    const sourcemap_codec: any;
-    type SourceMapLine = ReturnType<typeof sourcemap_codec.decode>[0];
-    export interface $mol_sourcemap_raw {
-        version: number;
-        sources: string[];
-        names: string[];
-        sourceRoot?: string;
-        sourcesContent?: (string | null)[];
-        mappings: string | SourceMapLine[];
-        file: string;
-    }
-    export class $mol_sourcemap_builder {
-        readonly file: string;
+    function $mol_sourcemap_strip(this: $, data: string): string;
+}
+
+declare namespace $ {
+    function $mol_sourcemap_url(this: $, uri: string, type?: "js" | "css"): string;
+}
+
+declare namespace $ {
+    function $mol_sourcemap_dataurl_decode(this: $, data: string): $mol_sourcemap_raw | undefined;
+    function $mol_sourcemap_dataurl_encode(this: $, map: $mol_sourcemap_raw, type?: "js" | "css"): string;
+}
+
+declare namespace $ {
+    function $mol_sourcemap_from_file(this: $, src: $mol_file): $mol_sourcemap_raw | undefined;
+}
+
+declare namespace $ {
+    function $mol_base64_encode(src: string | Uint8Array): string;
+}
+
+declare namespace $ {
+    function $mol_base64_encode_node(str: string | Uint8Array): string;
+}
+
+declare namespace $ {
+    function $mol_compare_text<Item>(item?: (item: Item) => string): (a: Item, b: Item) => number;
+}
+
+declare namespace $ {
+    class $mol_sourcemap_builder {
         readonly separator: string;
+        readonly file?: string | undefined;
         version: number;
         protected sourceRoot: string;
         protected separator_count: number;
-        constructor(file: string, separator?: string);
+        constructor(dir: string, separator?: string, file?: string | undefined);
         protected chunks: string[];
-        protected segment_lines: SourceMapLine[];
+        protected segment_lines: $mol_sourcemap_line[];
         protected sources: string[];
         protected source_indexes: Map<string, number>;
         protected names: string[];
@@ -947,32 +963,29 @@ declare namespace $ {
         protected add_content(content: string, file?: string): void;
         add(content: string, file?: string, raw?: $mol_sourcemap_raw | string): void;
     }
-    export {};
 }
 
 declare namespace $ {
-    function $mol_base64_encode(src: string | Uint8Array): string;
-}
-
-declare namespace $ {
-    function $mol_base64_encode_node(str: string | Uint8Array): string;
-}
-
-declare namespace $ {
-    function $mol_diff_path<Item>(...paths: Item[][]): {
-        prefix: Item[];
-        suffix: Item[][];
-    };
-}
-
-declare namespace $ {
-    class $mol_error_mix extends Error {
-        errors: Error[];
-        constructor(message: string, ...errors: Error[]);
-        toJSON(): string;
+    class $mol_error_mix<Cause extends {} = {}> extends AggregateError {
+        readonly cause: Cause;
+        name: string;
+        constructor(message: string, cause?: Cause, ...errors: Error[]);
+        static [Symbol.toPrimitive](): string;
+        static toString(): string;
+        static make(...params: ConstructorParameters<typeof $mol_error_mix>): $mol_error_mix<{}>;
     }
 }
 
+declare namespace $ {
+    function $mol_html_encode(text: string): string;
+}
+
+declare namespace $ {
+    function $mol_tree2_xml_to_text(xml: $mol_tree2): $mol_tree2;
+}
+
+/// <reference types="node" />
+/// <reference types="node" />
 declare namespace $ {
     function $mol_build_start(this: $, paths: string[]): void;
     class $mol_build extends $mol_object {
@@ -983,6 +996,7 @@ declare namespace $ {
         metaTreeTranspile(path: string): $mol_file[];
         viewTreeTranspile(path: string): $mol_file[];
         cssTranspile(path: string): $mol_file[];
+        glslTranspile(path: string): $mol_file[];
         mods({ path, exclude }: {
             path: string;
             exclude?: string[];
@@ -999,11 +1013,11 @@ declare namespace $ {
             path: string;
             exclude?: string[];
         }): $mol_file[];
-        tsOptions(): any;
+        tsOptions(): import("typescript").CompilerOptions;
         tsSource({ path, target }: {
             path: string;
             target: number;
-        }): any;
+        }): import("typescript").SourceFile;
         tsPaths({ path, exclude, bundle }: {
             path: string;
             bundle: string;
@@ -1013,31 +1027,31 @@ declare namespace $ {
             path: string;
             bundle: string;
             exclude: string[];
-        }): any;
+        }): import("typescript").CompilerHost;
         tsTranspiler({ path, exclude, bundle }: {
             path: string;
             bundle: string;
             exclude: string[];
-        }): any;
+        }): import("typescript").Program;
         tsTranspile({ path, exclude, bundle }: {
             path: string;
             bundle: string;
             exclude: string[];
-        }): any;
+        }): import("typescript").EmitResult;
         tsService({ path, exclude, bundle }: {
             path: string;
             bundle: string;
             exclude: string[];
         }): {
             recheck: () => void;
-            destructor: () => any;
+            destructor: () => void;
         } | null;
-        js_error(path: string, next?: Error | null): Error | null;
+        js_error(path: string, next?: string | null): string | null;
         js_content(path: string): {
             text: string;
             map: $mol_sourcemap_raw | undefined;
         };
-        sourcesJS({ path, exclude }: {
+        sources_js({ path, exclude }: {
             path: string;
             exclude: string[];
         }): $mol_file[];
@@ -1069,8 +1083,14 @@ declare namespace $ {
         }): {
             [index: string]: number;
         };
+        interactive(): boolean;
+        gitVersion(): string;
+        gitDeepenSupported(): boolean;
+        gitPull(path: string): import("child_process").SpawnSyncReturns<Buffer>;
+        gitSubmoduleDirs(): Set<string>;
+        is_root_git(): boolean;
         modEnsure(path: string): boolean;
-        modMeta(path: string): $mol_tree;
+        modMeta(path: string): $mol_tree2;
         graph({ path, exclude }: {
             path: string;
             exclude?: string[];
@@ -1097,11 +1117,15 @@ declare namespace $ {
             bundle?: string;
         }): $mol_file[];
         logBundle(target: $mol_file, duration: number): void;
-        bundleJS({ path, exclude, bundle, moduleTarget }: {
+        bundleJS({ path, exclude, bundle }: {
             path: string;
             exclude: string[];
             bundle: string;
-            moduleTarget?: string;
+        }): $mol_file[];
+        bundleMJS({ path, exclude, bundle }: {
+            path: string;
+            exclude: string[];
+            bundle: string;
         }): $mol_file[];
         bundleAuditJS({ path, exclude, bundle }: {
             path: string;
@@ -1126,10 +1150,15 @@ declare namespace $ {
             exclude?: string[];
             bundle: string;
         }): $mol_file[];
+        bundleMetaTree({ path, exclude, bundle }: {
+            path: string;
+            exclude?: string[];
+            bundle: string;
+        }): $mol_file[];
         nodeDeps({ path, exclude }: {
             path: string;
             exclude: string[];
-        }): string[];
+        }): Map<string, string>;
         bundleReadmeMd({ path, exclude }: {
             path: string;
             exclude: string[];
@@ -1168,17 +1197,20 @@ declare namespace $ {
     }
 }
 
+/// <reference types="node" />
+/// <reference types="serve-static" />
 declare namespace $ {
     class $mol_server extends $mol_object {
-        express(): any;
-        http(): any;
-        connections: Set<any>;
-        socket(): any;
+        express(): import("express-serve-static-core").Express;
+        internal_ip(): string;
+        http(): import("http").Server<typeof import("http").IncomingMessage, typeof import("http").ServerResponse>;
+        connections: Set<import("ws")>;
+        socket(): import("ws").Server<typeof import("ws"), typeof import("http").IncomingMessage>;
         expressHandlers(): any[];
         expressCompressor(): unknown;
         expressCors(): unknown;
-        expressBodier(): any;
-        expressFiler(): any;
+        expressBodier(): import("connect").NextHandleFunction;
+        expressFiler(): import("serve-static").RequestHandler<import("express").Response<any, Record<string, any>>>;
         expressDirector(): unknown;
         expressIndex(): (req: typeof $node.express.request, res: typeof $node.express.response, next: () => void) => void;
         expressGenerator(): (req: any, res: any, next: () => void) => void;
@@ -1189,44 +1221,33 @@ declare namespace $ {
     }
 }
 
-declare namespace $ {
-    function $mol_fail_catch(error: object): boolean;
-}
-
-declare namespace $ {
-    function $mol_compare_deep<Value>(a: Value, b: Value): boolean;
-}
-
+/// <reference types="node" />
+/// <reference types="node" />
+/// <reference types="node" />
+/// <reference types="node" />
 declare namespace $ {
     class $mol_build_server extends $mol_server {
         static trace: boolean;
-        expressGenerator(): (req: typeof $node.express.request, res: typeof $node.express.response, next: () => any) => Promise<any> | undefined;
+        expressGenerator(): (req: any, res: any, next: () => void) => Promise<any> | undefined;
+        handleRequest(req: typeof $node.express.request, res: typeof $node.express.response, next: () => any): Promise<any> | undefined;
         build(): $mol_build;
         generate(url: string): $mol_file[];
-        expressIndex(): (req: typeof $node.express.request, res: typeof $node.express.response, next: () => void) => void;
+        expressIndex(): (req: typeof $node.express.request, res: typeof $node.express.response, next: () => void) => void | import("express").Response<any, Record<string, any>>;
         port(): number;
-        start(): any;
+        lines(next?: Map<import("ws"), string>): Map<import("ws"), string>;
+        socket(): import("ws").Server<typeof import("ws"), typeof import("http").IncomingMessage>;
+        start(): import("ws").Server<typeof import("ws"), typeof import("http").IncomingMessage>;
+        notify([line, path]: [InstanceType<$node['ws']>, string]): boolean;
+        slave_commands(next?: string[]): string[];
+        slave_servers(): ((import("child_process").ChildProcessByStdio<import("stream").Writable, null, null> & {
+            destructor: () => void;
+        }) | null)[];
+        slave_server(cmd: string): (import("child_process").ChildProcessByStdio<import("stream").Writable, null, null> & {
+            destructor: () => void;
+        }) | null;
+        repl(): import("readline").Interface;
     }
 }
 
-declare namespace $ {
-    function $mol_tree2_to_string(this: $, tree: $mol_tree2): string;
-}
-
-declare namespace $ {
-    function $mol_view_tree2_ts_array_body(this: $, operator: $mol_tree2, parent_context: $mol_view_tree2_context, super_method?: $mol_view_tree2_prop): $mol_tree2;
-}
-
-declare namespace $ {
-    function $mol_view_tree2_ts_array(this: $, operator: $mol_tree2, context: $mol_view_tree2_context, super_method?: $mol_view_tree2_prop | undefined): $mol_tree2[];
-}
-
-declare namespace $ {
-    function $mol_view_tree2_ts_method_body(this: $, having_parts: $mol_view_tree2_prop, parent_context: $mol_view_tree2_context): undefined;
-}
-
-declare namespace $ {
-    function $mol_view_tree2_ts_method(this: $, owner_parts: $mol_view_tree2_prop, body: $mol_tree2, types?: boolean): $mol_tree2[];
-}
-
 export = $;
+//# sourceMappingURL=node.d.ts.map

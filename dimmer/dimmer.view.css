@@ -1,10 +1,11 @@
 [mol_dimmer] {
 	display: block;
+	max-width: 100%;
 }
 
 [mol_dimmer_low] {
 	display: inline;
-	opacity: 0.66;
+	opacity: 0.8;
 }
 
 [mol_dimmer_high] {

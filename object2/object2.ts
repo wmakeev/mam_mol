@@ -2,8 +2,10 @@ namespace $ {
 
 	export class $mol_object2 {
 		
-		static $ = $ as $
+		static $ = $ as any as $
 		
+		[Symbol.toStringTag]!: string
+
 		[ $mol_ambient_ref ] = null as any as $
 		get $() {
 			if( this[ $mol_ambient_ref ] ) return this[ $mol_ambient_ref ]
@@ -29,23 +31,27 @@ namespace $ {
 		}
 		
 		static toString() {
-			if( Symbol.toStringTag in this ) return this[ Symbol.toStringTag ]
-			return this.name
+			return ( this as any )[ Symbol.toStringTag ] || this.$.$mol_func_name( this )
+		}
+		
+		static toJSON() {
+			return this.toString()
 		}
 		
 		destructor() { }
+		static destructor() { }
 		
-		[ Symbol.toPrimitive ]( hint: string ) {
-			return hint === 'number' ? this.valueOf() : this.toString()
+		//[ Symbol.toPrimitive ]( hint: string ) {
+		//	return hint === 'number' ? this.valueOf() : this.toString()
+		//}
+		
+		toString(): string {
+			return this[ Symbol.toStringTag ] || this.constructor.name + '<>'
 		}
 		
-		toString() {
-			return this[ Symbol.toStringTag ] || this.constructor.name + '()'
-		}
-		
-		toJSON() {
-			return this.toString()
-		}
+		// toJSON(): any {
+		// 	return this.toString()
+		// }
 
 	}
 }

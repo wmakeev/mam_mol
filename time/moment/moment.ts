@@ -26,13 +26,22 @@ namespace $ {
 		$mol_fail( new Error( `Wrong time component ${ str }` ) )
 	}
 
+	/**
+	 * Small, simple, powerful, and fast TypeScript/JavaScript library for proper date/time/duration/interval arithmetic.
+	 *
+	 * Immutable iso8601 time moment representation.
+	 * @see http://localhost:9080/mol/app/docs/-/test.html#!demo=mol_time_demo
+	 */
 	export class $mol_time_moment extends $mol_time_base {
 
 		constructor( config : $mol_time_moment_config = new Date ) {
 			
 			super()
 
-			if( typeof config === 'number' ) config = new Date( config )
+			if( typeof config === 'number' ) {
+				config = new Date( config )
+				if( Number.isNaN( config.valueOf() ) ) throw new RangeError( `Wrong ms count` )
+			}
 			
 			if( typeof config === 'string' ) {
 				
@@ -190,7 +199,7 @@ namespace $ {
 			
 		}
 
-		toOffset( config : $mol_time_duration_config ) {
+		toOffset( config: $mol_time_duration_config = new $mol_time_moment().offset! ) {
 			
 			const duration = new $mol_time_duration( config )
 			const offset = this.offset || new $mol_time_moment().offset!
@@ -207,6 +216,18 @@ namespace $ {
 
 		toString( pattern = 'YYYY-MM-DDThh:mm:ss.sssZ' ) {
 			return super.toString( pattern )
+		}
+		
+		[ Symbol.toPrimitive ]( mode: 'default' | 'number' | 'string' ) {
+			return mode === 'number' ? this.valueOf() : this.toString()
+		}
+		
+		[ $mol_dev_format_head ]() {
+			return $mol_dev_format_span( {},
+				$mol_dev_format_native( this ),
+				' ',
+				$mol_dev_format_accent( this.toString( 'YYYY-MM-DD hh:mm:ss.sss Z' ) ),
+			)
 		}
 
 		/// Mnemonics:
@@ -411,8 +432,8 @@ namespace $ {
 			
 			'sss' : ( moment : $mol_time_moment )=> {
 				if( moment.second == null ) return ''
-				const millisecond = Math.floor( ( moment.second - Math.floor( moment.second ) ) * 1000 )
-				return String( 1000 + millisecond ).slice(1)
+				const millisecond = ( moment.second - Math.trunc( moment.second ) ).toFixed( 3 )
+				return millisecond.slice(2)
 			},
 			
 			'Z' : ( moment : $mol_time_moment )=> {

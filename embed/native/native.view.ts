@@ -2,32 +2,28 @@ namespace $.$$ {
 	export class $mol_embed_native extends $.$mol_embed_native {
 
 		@ $mol_mem
-		loaded() {
-
-			const node = this.dom_node() as HTMLObjectElement
-			
-			this.uri_resource()
-			
-			return $mol_fiber_sync( () => new Promise< boolean >( ( done, fail )=> {
+		window() {
+			$mol_wire_solid()
+			return $mol_wire_sync( this as $mol_embed_native ).load( this.dom_node_actual() as HTMLIFrameElement )
+		}
+		
+		load( frame: HTMLIFrameElement ) {
+			return new Promise< Window >( ( done, fail )=> {
 				
-				new $mol_after_timeout( 3_000, ()=> {
+				frame.onload = () => {
 					try {
-						if( node.contentWindow!.location.href === 'about:blank' ) {
-							done( true )
+						if( frame.contentWindow!.location.href === 'about:blank' ) {
+							return
 						}
 					} catch { }
-				} )
-				
-				node.onload = () => {
-					done( true )
+					done( frame.contentWindow! )
 				}
 				
-				node.onerror = ( event : Event | string ) => {
+				frame.onerror = ( event : Event | string ) => {
 					fail( typeof event === 'string' ? new Error( event ) : ( event as ErrorEvent ).error || event )
 				}
 				
-			} ) )()
-			
+			} )
 		}
 		
 		@ $mol_mem
@@ -35,32 +31,35 @@ namespace $.$$ {
 			return this.uri().replace( /#.*/, '' )
 		}
 		
-		_uri_sync: $mol_fiber | undefined
-		
 		@ $mol_mem
-		uri_listener() {
-			const node = this.dom_node() as HTMLObjectElement
+		message_listener() {
 			return new $mol_dom_listener(
 				$mol_dom_context,
 				'message',
-				$mol_fiber_root( ( event: MessageEvent<[ string, string ]> )=> {
-					if( event.source !== node.contentWindow ) return
-					if( !Array.isArray( event.data ) ) return
-					if( event.data[0] !== 'hashchange' ) return
-					this._uri_sync?.destructor()
-					this._uri_sync = $mol_fiber.current!
-					$mol_wait_timeout( 1000 )
-					this.uri( event.data[1] )
-				} )
+				$mol_wire_async( this ).message_receive
 			)
 		}
-
-		render() {
-			const node = super.render()
-			this.uri_listener()
-			this.loaded()
-			return node
+		
+		message_receive( event?: MessageEvent<[ string, string ]> ) {
+			
+			if( !event ) return
+			if( event.source !== this.window() ) return
+			if( !Array.isArray( event.data ) ) return
+			
+			(this.message() as any)[ event.data[0] ]?.( event )
 		}
 
+		uri_change( event: MessageEvent<[ string, string ]> ) {
+			this.$.$mol_wait_timeout( 1000 )
+			this.uri( event.data[1] )
+		}
+
+		auto() {
+			return [
+				this.message_listener(),
+				this.window(),
+			]
+		}
+		
 	}
 }

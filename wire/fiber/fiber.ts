@@ -3,192 +3,304 @@ namespace $ {
 	const handled = new WeakSet< Promise< unknown > >()
 	
 	/**
-	 * Suspendable task with with support both sync/async api.
+	 * Suspendable task with support both sync/async api.
+	 * 
+	 * 	A1 A2 A3 A4 P1 P2 P3 P4 S1 S2 S3
+	 * 	^           ^           ^
+	 * 	args_from   pubs_from   subs_from
 	 **/
-	export class $mol_wire_fiber<
+	export abstract class $mol_wire_fiber<
 		Host,
 		Args extends readonly unknown[],
 		Result,
 	> extends $mol_wire_pub_sub {
+	
+		static warm = true
 		
-		static make<
-			Host,
-			Args extends readonly unknown[],
-			Result,
-		>(
-			host: Host,
-			task: ( this : Host , ... args : Args )=> Result,
-			... args: Args
-		): $mol_wire_fiber< Host, [ ... Args ], Result > {
+		static planning = new Set< $mol_wire_fiber< any, any, any > >()
+		static reaping = new Set< $mol_wire_fiber< any, any, any > >()
+		
+		static plan_task: $mol_after_timeout | null = null
+		static plan() {
 			
-			const existen = $mol_wire?.next()
+			if( this.plan_task ) return
 			
-			reuse: if( existen ) {
+			this.plan_task = new $mol_after_timeout( 0, ()=> {
 				
-				if(!( existen instanceof $mol_wire_fiber )) break reuse
+				try {
+					this.sync()
+				} finally {
+					$mol_wire_fiber.plan_task = null
+				}
+
+			} )
 			
-				if( existen.host !== host ) break reuse
-				if( existen.task !== task ) break reuse
-				if( !$mol_compare_deep( existen.args, args ) ) break reuse
-				
-				return existen
-			}
-			
-			return new this( host, task, ... args )
 		}
 		
-		public result: Result | Error | Promise< Result | Error > = undefined as any
-		readonly args: Args
+		static sync() {
+			
+			// Sync whole fiber graph
+			while( this.planning.size ) {
+				for( const fiber of this.planning ) {
+					this.planning.delete( fiber )
+					if( fiber.cursor >= 0 ) continue
+					if( fiber.cursor === $mol_wire_cursor.final ) continue
+					fiber.fresh()
+				}
+			}
+			
+			// Collect garbage
+			while( this.reaping.size ) {
+				
+				const fibers = this.reaping
+				this.reaping = new Set
+				
+				for( const fiber of fibers ) {
+					if( !fiber.sub_empty ) continue
+					fiber.destructor()
+				}
+				
+			}
+			
+		}
+		
+		[Symbol.toStringTag]!: string
+
+		public cache: Result | Error | Promise< Result | Error > = undefined as any
+		
+		get args() {
+			return this.data.slice( 0 , this.pub_from ) as any as Args
+		}
+		
+		result() {
+			if( $mol_promise_like( this.cache ) ) return
+			if( this.cache instanceof Error ) return
+			return this.cache
+		}
+		
+		get incompleted() {
+			return $mol_promise_like( this.cache )
+		}
+		
+		field() {
+			return this.task.name + '<>'
+		}
 		
 		constructor(
-			readonly host: Host,
+			id: string,
 			readonly task: ( this : Host , ... args : Args )=> Result,
-			... args: Args
+			readonly host?: Host,
+			args?: Args
 		) {
+			
 			super()
-			this.args = args
+			if( args ) this.data.push( ... args )
+			this.pub_from = this.sub_from = args?.length ?? 0
+			this[ Symbol.toStringTag ] = id
+			
 		}
 		
+		plan() {
+			$mol_wire_fiber.planning.add( this )
+			$mol_wire_fiber.plan()
+			return this
+		}
+		
+		reap() {
+			$mol_wire_fiber.reaping.add( this )
+			$mol_wire_fiber.plan()
+		}
+		
+		toString() {
+			return this[ Symbol.toStringTag ]
+		}
+		
+		toJSON() {
+			return this[ Symbol.toStringTag ]
+		}
+
 		[ $mol_dev_format_head ]() {
 			
-			const args = [] as any[]
-			for( const val of this.args ) {
-				args.push(
-					$mol_dev_format_auto( val ),
-					$mol_dev_format_shade( ', ' ),
-				)
-			}
+			const cursor = {
+				[ $mol_wire_cursor.stale ]: '🔴',
+				[ $mol_wire_cursor.doubt ]: '🟡',
+				[ $mol_wire_cursor.fresh ]: '🟢',
+				[ $mol_wire_cursor.final ]: '🔵',
+			}[ this.cursor ] ?? this.cursor.toString()
 			
 			return $mol_dev_format_div( {},
-				$mol_dev_format_native( this ),
-				$mol_dev_format_shade( this.pubs_cursor >= 0 ? this.pubs_cursor : this.pubs_cursor.constructor.name ),
-				$mol_dev_format_shade( ': ' ),
-				$mol_dev_format_accent(
-					... this.host ? [
-						String( this.host ),
-						$mol_dev_format_shade( '.' ),
-					] : [],
-					$$.$mol_func_name( this.task ),
-				),
-				$mol_dev_format_shade( '(' ),
-				... args.slice( 0, -1 ),
-				$mol_dev_format_shade( ') = ' ),
-				$mol_dev_format_auto( this.result ),
+				$mol_owning_check( this, this.cache )
+					? $mol_dev_format_auto({
+						[ $mol_dev_format_head ]: ()=> $mol_dev_format_shade( cursor ),
+						[ $mol_dev_format_body ]: ()=> $mol_dev_format_native( this ),
+					})
+					: $mol_dev_format_shade( $mol_dev_format_native( this ), cursor ),
+				$mol_dev_format_auto( this.cache ),
 			)
 			
 		}
-
-		absorb( quant: number ) {
-
-			if( !super.absorb( quant ) ) return false
-			
-			if( this.subs_from === this.length ) {
-				new $mol_after_frame( ()=> this.touch() )
-			}
-			
-			return true
+		
+		get $() {
+			return ( this.host ?? this.task as any )['$']
 		}
 		
-		touch() {
+		emit( quant = $mol_wire_cursor.stale ) {
+			if( this.sub_empty ) this.plan()
+			else super.emit( quant )
+		}
+		
+		fresh() {
+
+			type Result = typeof this.cache
 			
-			type Result = typeof this.result
+			if( this.cursor === $mol_wire_cursor.fresh ) return
+			if( this.cursor === $mol_wire_cursor.final ) return
 			
-			if( this.pubs_cursor === $mol_wire_fresh ) return
-			
-			check: if( this.pubs_cursor === $mol_wire_doubt ) {
+			check: if( this.cursor === $mol_wire_cursor.doubt ) {
 				
-				for( let i = 0 ; i < this.subs_from; i += 2 ) {
-					;( this[i] as $mol_wire_pub ).touch()
-					if( this.pubs_cursor === $mol_wire_stale ) break check
+				for( let i = this.pub_from ; i < this.sub_from; i += 2 ) {
+					;( this.data[i] as $mol_wire_pub )?.fresh()
+					if( this.cursor !== $mol_wire_cursor.doubt ) break check
 				}
 				
-				this.pubs_cursor = $mol_wire_fresh
+				this.cursor = $mol_wire_cursor.fresh
 				return
 				
 			}
 			
-			const bu = this.begin()
+			const bu = this.track_on()
+			let result: typeof this.cache
 
 			try {
 
-				let result: Result = this.task.call( this.host, ... this.args )
-				
-				if( result instanceof Promise ) {
-					const put = this.put.bind( this )
-					result = result.then( put, put )
-					handled.add( result )
+				switch( this.pub_from ) {
+					case 0: result = (this.task as any).call( this.host! ); break
+					case 1: result = (this.task as any).call( this.host!, this.data[0] ); break
+					default: result = (this.task as any).call( this.host!, ... this.args ); break
 				}
 				
-				this.put( result )
+				if( $mol_promise_like( result ) && !handled.has( result ) ) {
+					
+					const put = ( res: Result )=> {
+						if( this.cache === result ) this.put( res )
+						return res
+					}
+					result = result.then( put, put )
+					
+				}
 				
 			} catch( error: any ) {
 				
-				if( error instanceof Promise && !handled.has( error ) ) {
-					error = error.finally( ()=> this.emit() )
-					handled.add( error )
+				if( error instanceof Error || $mol_promise_like( error ) ) {
+					result = error
+				} else {
+					result = new Error( String( error ), { cause: error } )
 				}
 				
-				this.put( error )
-				
-			} finally {
-				this.end( bu )
-			}
-
-		}
-		
-		put( next: Result | Error | Promise< Result | Error > ) {
-			
-			const prev = this.result
-			this.result = next
-			
-			if( this.subs_from < this.length ) {
-				if( !$mol_compare_deep( prev, next ) ) {
-					for( let i = this.subs_from; i < this.length; i += 2 ) {
-						;( this[i] as $mol_wire_pub_sub ).emit()
-					}
+				if( $mol_promise_like( result ) && !handled.has( result ) ) {
+					
+					result = result.finally( ()=> {
+						if( this.cache === result ) this.absorb()
+					} )
+					
 				}
+				
 			}
 			
-			return next
+			if( $mol_promise_like( result ) && !handled.has( result ) ) {
+					
+				result = Object.assign( result, {
+					destructor: (result as any)['destructor'] ?? (()=> {})
+				} )
+				handled.add( result )
+				
+				const error = new Error( `Promise in ${ this }` )
+				Object.defineProperty( result, 'stack', { get: ()=> error.stack } )
+				
+			}
+			
+			if( ! $mol_promise_like( result ) ) {
+				this.track_cut()
+			}
+			
+			this.track_off( bu )
+			this.put( result )
+			
+			return this
 		}
 		
+		refresh() {
+			this.cursor = $mol_wire_cursor.stale
+			this.fresh()
+		}
+		
+		abstract put( next: Result | Error | Promise< Result | Error > ): Result | Error | Promise< Result | Error >
+		
+		/**
+		 * Synchronous execution. Throws Promise when waits async task (SuspenseAPI provider).
+		 * Should be called inside SuspenseAPI consumer (ie fiber).
+		 */
 		sync() {
 			
-			this.promo()
-			this.touch()
-			
-			if( this.result instanceof Error ) {
-				return $mol_fail_hidden( this.result )
+			if( !$mol_wire_fiber.warm ) {
+				return this.result() as Awaited< Result >
 			}
 			
-			if( this.result instanceof Promise ) {
-				
-				if( !$mol_wire || !( $mol_wire instanceof $mol_wire_fiber ) ) {
-					$mol_fail( new Error( 'Sync execution of fiber available only inside $mol_fiber2_async' ) )
-				}
-				
-				return $mol_fail_hidden( this.result )
+			this.promote()
+			this.fresh()
+			
+			if( this.cache instanceof Error ) {
+				return $mol_fail_hidden( this.cache )
 			}
 			
-			return this.result as Result extends Promise< infer Res > ? Res : Result
+			if( $mol_promise_like( this.cache ) ) {
+				return $mol_fail_hidden( this.cache )
+			}
+			
+			return this.cache as Awaited< Result >
 		}
 
+		/**
+		 * Asynchronous execution.
+		 * It's SuspenseAPI consumer. So SuspenseAPI providers can be called inside.
+		 */
 		async async() {
 			
 			while( true ) {
 				
-				this.touch()
+				this.fresh()
 				
-				if( this.result instanceof Error ) throw this.result
+				if( this.cache instanceof Error ) {
+					$mol_fail_hidden( this.cache )
+				}
 				
-				if( this.result instanceof Promise ) await this.result
-				else break
+				if( ! $mol_promise_like( this.cache ) ) return this.cache
+					
+				await Promise.race([ this.cache, this.step() ])
+				if( ! $mol_promise_like( this.cache ) ) return this.cache
+					
+				if( this.cursor === $mol_wire_cursor.final ) {
+					// never ends on destructed fiber
+					await new Promise( ()=> {} )
+				}
 				
 			}
 			
-			return this.result
 		}
-
+		
+		step() {
+			return new Promise< null >( done => {
+				const sub = new $mol_wire_pub_sub
+				const prev = sub.track_on()
+				sub.track_next( this )
+				sub.track_off( prev )
+				sub.absorb = ()=> {
+					done( null )
+					setTimeout( ()=> sub.destructor() )
+				}
+			} )
+		}
+		
 	}
 	
 }

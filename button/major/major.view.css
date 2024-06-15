@@ -1,4 +1,4 @@
-[mol_button_major][disabled] {
-	opacity: .5;
-	filter: grayscale();
+[mol_button_major] {
+	background-color: var(--mol_theme_back);
+	color: var(--mol_theme_text);
 }

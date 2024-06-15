@@ -1,5 +1,9 @@
 namespace $.$$ {
 	
+	/**
+	 * Search input with suggest and clear button.
+	 * @see https://mol.hyoo.ru/#!section=demos/demo=mol_search_demo
+	 */
 	export class $mol_search extends $.$mol_search {
 		
 		@ $mol_mem
@@ -21,13 +25,11 @@ namespace $.$$ {
 		}
 
 		suggest_selected( next? : string ) {
+			
 			if( next === undefined ) return
 			
 			this.query( next )
-			
-			$mol_fiber_defer( ()=> {
-				this.Query().focused( true )
-			} )
+			this.Query().focused( true )
 			
 		}
 		
@@ -64,13 +66,15 @@ namespace $.$$ {
 			return key
 		}
 		
+		@ $mol_mem
 		menu_items() {
 			return this.suggests().map( ( suggest : string ) => this.Suggest( suggest ) )
 		}
 		
 		suggest_select( id : string , event? : MouseEvent ) {
 			this.query( id )
-			this.Query().focused( false )
+			this.Query().selection([ id.length, id.length ])
+			this.Query().focused( true )
 		}
 		
 		clear( event? : Event ) {

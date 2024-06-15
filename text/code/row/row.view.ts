@@ -5,6 +5,10 @@ namespace $.$$ {
 		maximal_width() {
 			return this.text().length * this.letter_width()
 		}
+		
+		syntax() {
+			return this.$.$mol_syntax2_md_code
+		}
 
 		@ $mol_mem_key
 		tokens( path: number[] ) {
@@ -16,9 +20,16 @@ namespace $.$$ {
 				? this.tokens( path.slice( 0, path.length - 1 ) )[ path[ path.length - 1 ] ].found.slice( 1, -1 )
 				: this.text()
 			
-			this.$.$mol_syntax2_md_code.tokenize(
+			this.syntax().tokenize(
 				text,
-				( name , found , chunks )=> tokens.push({ name , found , chunks }),
+				( name , found , chunks )=> {
+					if( name === 'code-sexpr' ) {
+						tokens.push({ name: 'code-punctuation', found: '(', chunks: [] })
+						tokens.push({ name: 'code-call', found: chunks[0], chunks: [] })
+					} else {
+						tokens.push({ name , found , chunks })	
+					}
+				},
 			)
 			
 			return tokens as Readonly< typeof tokens >
@@ -74,6 +85,12 @@ namespace $.$$ {
 
 		}
 		
+		@ $mol_mem_key
+		token_uri( path: number[] ) {
+			const uri = this.token_text( path )
+			return this.uri_resolve( uri )
+		}
+		
 		*view_find(
 			check: ( path : $mol_view, text?: string )=> boolean,
 			path = [] as $mol_view[],
@@ -85,6 +102,26 @@ namespace $.$$ {
 			
 		}
 
+		@ $mol_mem_key
+		find_pos( offset: number ) {
+			return this.find_token_pos([ offset ])
+		}
+		
+		@ $mol_mem_key
+		find_token_pos( [ offset, ... path ]: number[] ) {
+			
+			for( const [ index, token ] of this.tokens( path ).entries() ) {
+				if( token.found.length >= offset ) {
+					const token = this.Token([ ... path, index ])
+					return { token, offset }
+				} else {
+					offset -= token.found.length
+				}
+			}
+			
+			return null
+		}
+		
 	}
 
 }

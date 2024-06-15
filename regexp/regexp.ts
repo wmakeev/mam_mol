@@ -70,7 +70,7 @@ namespace $ {
 			super( source , flags )
 		}
 		
-		*[Symbol.matchAll] (str:string): IterableIterator< $mol_type_override< RegExpExecArray, { groups?: { [ key in keyof Groups ] : string } } > > {
+		*[Symbol.matchAll] (str:string): IterableIterator< RegExpMatchArray & $mol_type_override< RegExpMatchArray, { groups?: { [ key in keyof Groups ] : string } } > > {
 			const index = this.lastIndex
 			this.lastIndex = 0
 			try {
@@ -85,10 +85,10 @@ namespace $ {
 		}
 		
 		/** Parses input and returns found capture groups or null */
-		[ Symbol.match ]( str : string ): null | string[] {
+		[ Symbol.match ]( str : string ): null | RegExpMatchArray {
 			const res = [ ... this[Symbol.matchAll]( str ) ].filter( r => r.groups ).map( r => r[0] )
 			if( !res.length ) return null
-			return res
+			return res as RegExpMatchArray
 		}
 		
 		/** Splits string by regexp edges */
@@ -112,7 +112,7 @@ namespace $ {
 			return Boolean( str.match( this) )
 		}
 		
-		exec( str : string ): $mol_type_override< RegExpExecArray , { groups?: { [ key in keyof Groups ] : string } } > | null {
+		exec( str : string ): RegExpExecArray & $mol_type_override< RegExpExecArray , { groups?: { [ key in keyof Groups ] : string } } > | null {
 			
 			const from = this.lastIndex
 			if( from >= str.length ) return null
@@ -124,7 +124,7 @@ namespace $ {
 				return Object.assign( [ str.slice( from ) ], {
 					index: from,
 					input: str,
-				} )
+				} ) as any
 			}
 
 			if( from === this.lastIndex ) {
@@ -140,7 +140,7 @@ namespace $ {
 				return Object.assign( [ skipped ], {
 					index: from,
 					input: res.input,
-				} )
+				} ) as any
 			}
 			
 			for( let i = 0 ; i < this.groups.length ; ++i ) {
@@ -155,6 +155,10 @@ namespace $ {
 			params: Groups_to_params< Groups >
 		): string | null {
 			return null
+		}
+		
+		get native() {
+			return new RegExp( this.source, this.flags )
 		}
 
 		/** Makes regexp that non-greedy repeats this pattern from min to max count */
@@ -206,6 +210,32 @@ namespace $ {
 			}
 	
 			return regexp2
+		}
+
+		/** Makes regexp that match any of options */
+		static vary<
+			Sources extends readonly $mol_regexp_source[]
+		>(
+			sources : Sources ,
+		) {
+			
+			const groups = [] as string[]
+			
+			const chunks = sources.map( source => {
+
+				const regexp = $mol_regexp.from( source )
+				groups.push( ... regexp.groups )
+				
+				return regexp.source
+
+			} ) as any as readonly[ $mol_regexp_source , ... $mol_regexp_source[] ]
+			
+			return new $mol_regexp< $mol_regexp_groups< Sources[number] > >(
+				`(?:${ chunks.join('|') })` ,
+				'' ,
+				groups as any[] ,
+			)
+			
 		}
 
 		/** Makes regexp that allow absent of this pattern */
@@ -342,7 +372,7 @@ namespace $ {
 
 					groups.push( name )
 
-					const regexp = $mol_regexp.from( source[ name ] )
+					const regexp = $mol_regexp.from( (source as any)[ name ] )
 					groups.push( ... regexp.groups )
 					
 					return `(${regexp.source})`
@@ -356,29 +386,29 @@ namespace $ {
 				)
 				
 				const validator = new RegExp( '^' + regexp.source + '$', flags )
-				regexp.generate = params => {
+				regexp.generate = (params: any) => {
 					
 					for( let option in source ) {
 						
 						if( option in params ) {
 							
-							if( typeof params[ option as any ] === 'boolean' ) {
+							if( typeof params[ option ] === 'boolean' ) {
 								
 								if( !params[ option as any ] ) continue
 								
 							} else {
 								
-								const str = String( params[ option as any ] )
+								const str = String( params[ option ] )
 								if( str.match( validator ) ) return str
 								
 								$mol_fail( new Error( `Wrong param: ${option}=${str}` ) )
 							}
 							
 						} else {
-							if( typeof source[ option as any ] !== 'object' ) continue
+							if( typeof (source as any)[ option ] !== 'object' ) continue
 						}
 						
-						const res = $mol_regexp.from( source[ option as any ] ).generate( params )
+						const res = $mol_regexp.from( (source as any)[ option  ] ).generate( params )
 						if( res ) return res
 						
 					}
@@ -428,7 +458,7 @@ namespace $ {
 			const regexp = forbidden.map( f => $mol_regexp.from( f ).source ).join('')
 			return new $mol_regexp( `[^${ regexp }]` )
 		}
-
+		
 		static decimal_only = $mol_regexp.from( /\d/gsu )
 		static decimal_except = $mol_regexp.from( /\D/gsu )
 		

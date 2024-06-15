@@ -1,31 +1,36 @@
 namespace $.$$ {
+	
+	/**
+	 * Allow user to select value from various options and displays current value.
+	 * @see https://mol.hyoo.ru/#!section=demos/demo=mol_select_demo_colors
+	 */
 	export class $mol_select_list extends $.$mol_select_list {
 
-		value( val? : string[] ) {
+		override value( val? : readonly string[] ) {
 			return super.value( val ) as readonly string[]
 		}
 
-		pick( key : string ) {
+		@ $mol_mem
+		override pick( key? : string ) {
+			
 			if( !key ) return ''
-			
 			this.value([ ... this.value() , key ])
-			
-			$mol_fiber_defer(()=> {
-				if( !this.pick_enabled() ) return
-				this.Pick().Trigger().focused( true )
-				this.Pick().open()
-			})
-			
+
 			return ''
 		}
 
+		override event_select( id : string , event? : MouseEvent ) {
+			event?.preventDefault()
+			this.pick( id )
+		}
+
 		@ $mol_mem
-		options() {
+		override options() {
 			return Object.keys( this.dictionary() ) as readonly string[]
 		}
 
 		@ $mol_mem
-		options_pickable() : readonly string[] {
+		override options_pickable() : readonly string[] {
 			
 			if( !this.enabled() ) return []
 			
@@ -34,39 +39,34 @@ namespace $.$$ {
 			
 		}
 
-		option_title( key : string ) {
+		override option_title( key : string ) {
 			const value = this.dictionary()[ key ] as string
 			return value == null ? key : value
 		}
 		
-		badge_title( index: number ) {
-			return this.option_title( this.value()[ index ] )
+		override badge_title( key: string ) {
+			return this.option_title( key )
 		}
 		
 		@ $mol_mem
-		pick_enabled() {
+		override pick_enabled() {
 			return this.options_pickable().length > 0
 		}
 
-		@ $mol_mem
-		sub() {
-			return [
-				... this.value().map( ( _, index )=> this.Badge( index ) ),
-				this.Pick(),
-			]
+		override Badges() {
+			return this.value()
+				.map( id => this.Badge( id ) )
+				.reverse()
 		}
 
 		@ $mol_mem
-		title() {
+		override title() {
 			return this.value().map( key => this.option_title( key ) ).join( ' + ' )
 		}
 
-		remove( index: number ) {
-			const value = this.value()
-			this.value([
-				... value.slice( 0 , index ),
-				... value.slice( index + 1 ),
-			])
+		@ $mol_action
+		override remove( key: string ) {
+			this.value(this.value().filter(id => id !== key))
 		}
 
 	}

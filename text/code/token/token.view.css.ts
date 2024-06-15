@@ -11,7 +11,7 @@ namespace $.$$ {
 			mol_text_code_token_type: {
 
 				'code-keyword': {
-					color: hsla( 0, 70, 50, 1 ),
+					color: hsla( 0, 70, 60, 1 ),
 				},
 				
 				'code-field': {
@@ -39,7 +39,7 @@ namespace $.$$ {
 				},
 				
 				'code-number': {
-					color: hsla( 60, 70, 50, 1 ),
+					color: hsla( 55, 65, 45, 1 ),
 				},
 				
 				'code-call': {

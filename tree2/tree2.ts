@@ -39,7 +39,7 @@ namespace $ {
 
 		) {
 			super()
-			this[ Symbol.toStringTag ] = type || '\\' + value
+			;(this as any)[ Symbol.toStringTag ] = type || '\\' + value
 		}
 
 		/** Makes collection node. */
@@ -136,7 +136,7 @@ namespace $ {
 		}
 		
 		/** Parses tree format. */
-		@ $mol_deprecated( 'Use $mol_tree2_from_string' )
+		/** @deprecated Use $mol_tree2_from_string */
 		static fromString( str : string , uri = 'unknown' ) {
 			return $$.$mol_tree2_from_string( str, uri )
 		}
@@ -247,30 +247,34 @@ namespace $ {
 
 		}
 
+		hack_self< Context extends { span?: $mol_span; [ key: string ]: unknown } = {} >(
+			belt: $mol_tree2_belt< Context >,
+			context = {} as Context,
+		) {
+			let handle = belt[ this.type ] || belt[ '' ]
+				
+			if( !handle || handle === Object.prototype[ this.type as keyof Object ] ) {
+				handle = ( input, belt, context )=> [
+					input.clone( input.hack( belt, context ), context.span )
+				]
+			}
+			
+			try {
+				return handle( this , belt , context! )
+			} catch( error: any ) {
+				error.message += `\n${ this.clone([]) }${ this.span }`
+				$mol_fail_hidden( error )
+			}
+		}
+
 		/** Transform tree through context with transformers */
 		hack< Context extends { span?: $mol_span; [ key: string ]: unknown } = {} >(
 			belt: $mol_tree2_belt< Context >,
 			context = {} as Context,
 		) {
-			
-			return ( [] as readonly $mol_tree2[] ).concat( ... this.kids.map( child => {
-
-				let handle = belt[ child.type ] || belt[ '' ]
-				
-				if( !handle || handle === Object.prototype[ child.type ] ) {
-					handle = ( input, belt, context )=> [
-						input.clone( input.hack( belt, context ), context.span )
-					]
-				}
-				
-				try {
-					return handle( child , belt , context! )
-				} catch( error: any ) {
-					error.message += `\n${ child.clone([]) }${ child.span }`
-					$mol_fail_hidden( error )
-				}
-
-			} ) )
+			return ( [] as readonly $mol_tree2[] ).concat(
+				... this.kids.map( child => child.hack_self(belt, context) )
+			)
 
 		}
 

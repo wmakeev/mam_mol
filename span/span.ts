@@ -15,7 +15,7 @@ namespace $ {
 		}
 
 		/** Span for begin of unknown resource */
-		static unknown = $mol_span.begin('unknown')
+		static unknown = $mol_span.begin('?')
 
 		/** Makes new span for begin of resource. */
 		static begin( uri: string, source = '' ) {
@@ -24,7 +24,7 @@ namespace $ {
 
 		/** Makes new span for end of resource. */
 		static end( uri: string , source: string ) {
-			return new $mol_span( uri , source, 1 , source.length + 1 , length )
+			return new $mol_span( uri , source, 1 , source.length + 1 , 0 )
 		}
 
 		/** Makes new span for entire resource. */
@@ -47,7 +47,7 @@ namespace $ {
 
 		/** Makes new error for this span. */
 		error( message : string , Class = Error ) {
-			return new Class( `${message}${this}` )
+			return new Class( `${message} (${this})` )
 		}
 
 		/** Makes new span for same uri. */
@@ -67,9 +67,9 @@ namespace $ {
 			if( begin < 0 ) begin += len
 			if( end < 0 ) end += len
 
-			if (begin < 0 || begin > len) this.$.$mol_fail(`Begin value '${begin}' out of range ${this}`)
-			if (end < 0 || end > len) this.$.$mol_fail(`End value '${end}' out of range ${this}`)
-			if (end < begin) this.$.$mol_fail(`End value '${end}' can't be less than begin value ${this}`)
+			if (begin < 0 || begin > len) this.$.$mol_fail( this.error( `Begin value '${begin}' out of range`, RangeError ) )
+			if (end < 0 || end > len) this.$.$mol_fail( this.error( `End value '${end}' out of range`, RangeError ) )
+			if (end < begin) this.$.$mol_fail( this.error( `End value '${end}' can't be less than begin value`, RangeError ) )
 
 			return this.span( this.row , this.col + begin , end - begin )
 		}

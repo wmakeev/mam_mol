@@ -1,7 +1,7 @@
 namespace $ {
 
 	// https://docs.google.com/document/d/1FTascZXT9cxfetuPRT2eXPQKXui4nWFivUnS_335T3U/preview#
-	$['devtoolsFormatters'] = $['devtoolsFormatters'] || []
+	($ as any)['devtoolsFormatters'] ||= []
 
 	export function $mol_dev_format_register( config : {
 		header : ( val : any , config : any )=> any
@@ -11,7 +11,7 @@ namespace $ {
 		hasBody : ( val : any , config : any )=> boolean
 		body : ( val : any , config : any )=> any
 	} ) {
-		$['devtoolsFormatters'].push( config )
+		($ as any)['devtoolsFormatters'].push( config )
 	}
 
 	export let $mol_dev_format_head = Symbol( '$mol_dev_format_head' )
@@ -26,9 +26,21 @@ namespace $ {
 			if( !val ) return null
 			
 			if( $mol_dev_format_head in val ) {
-				return val[ $mol_dev_format_head ]()
+				try {
+					return val[ $mol_dev_format_head ]()
+				} catch( error ) {
+					return $mol_dev_format_accent( $mol_dev_format_native( val ), '💨', $mol_dev_format_native( error ), '' )
+				}
 			}
-
+			
+			if( typeof val === 'function' ) {
+				return $mol_dev_format_native( val )
+			}
+			
+			if( Symbol.toStringTag in val ) {
+				return $mol_dev_format_native( val )
+			}
+			
 			return null
 			
 		} ,
@@ -42,7 +54,8 @@ namespace $ {
 	export function $mol_dev_format_native( obj : any ) {
 		
 		if( typeof obj === 'undefined' ) return $mol_dev_format_shade( 'undefined' )
-		if( typeof obj !== 'object' && typeof obj !== 'function' ) return obj
+		
+		// if( ![ 'object', 'function', 'symbol' ].includes( typeof obj )  ) return obj
 
 		return [
 			'object' ,
@@ -58,10 +71,6 @@ namespace $ {
 		
 		if( obj == null ) return $mol_dev_format_shade( String( obj ) )
 
-		if( typeof obj === 'object' && $mol_dev_format_head in obj ) {
-			return obj[ $mol_dev_format_head ]()
-		}
-
 		return [
 			'object' ,
 			{
@@ -76,7 +85,7 @@ namespace $ {
 			
 		const styles = [] as string[]
 		
-		for( let key in style ) styles.push( `${ key } : ${ style[key] }` )
+		for( let key in style ) styles.push( `${ key } : ${ (style as any)[key] }` )
 		
 		return [
 			element ,
@@ -92,7 +101,7 @@ namespace $ {
 		return $mol_dev_format_element(
 			'span' ,
 			{
-				'vertical-align' : '8%',
+				// 'vertical-align' : '8%',
 				... style ,
 			} ,
 			... content ,
