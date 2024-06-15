@@ -23,11 +23,17 @@
 			if(next !== undefined) return next;
 			return .4;
 		}
+		Beep(id){
+			const obj = new this.$.$mol_audio_vibe();
+			(obj.shape_default) = () => ((this?.shape()));
+			return obj;
+		}
 		Beep_track(){
 			const obj = new this.$.$mol_audio_melody();
 			(obj.notes) = (next) => ((this?.notes(next)));
 			(obj.note_length) = (next) => ((this?.note_length(next)));
 			(obj.note_off_part) = (next) => ((this?.note_off_part(next)));
+			(obj.instrument) = (id) => ((this?.Beep(id)));
 			return obj;
 		}
 		Note_length(){
@@ -61,6 +67,31 @@
 			(obj.sub) = () => ([(this?.Note_length_field()), (this?.Note_off_part_field())]);
 			return obj;
 		}
+		shape_label(){
+			return "Shape";
+		}
+		shape(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Shape_select(){
+			const obj = new this.$.$mol_select();
+			(obj.Filter) = () => (null);
+			(obj.value) = (next) => ((this?.shape(next)));
+			(obj.options) = () => ([
+				"sine", 
+				"square", 
+				"sawtooth", 
+				"triangle"
+			]);
+			return obj;
+		}
+		Shape(){
+			const obj = new this.$.$mol_labeler();
+			(obj.title) = () => ((this?.shape_label()));
+			(obj.content) = () => ([(this?.Shape_select())]);
+			return obj;
+		}
 		Notes(){
 			const obj = new this.$.$mol_textarea();
 			(obj.hint) = () => ("Example: e _ c#5/2 _/2");
@@ -71,6 +102,11 @@
 			const obj = new this.$.$mol_form_field();
 			(obj.name) = () => ("Notes");
 			(obj.control) = () => ((this?.Notes()));
+			return obj;
+		}
+		Notes_row(){
+			const obj = new this.$.$mol_row();
+			(obj.sub) = () => ([(this?.Notes_field())]);
 			return obj;
 		}
 		Beep_active_icon(){
@@ -108,7 +144,8 @@
 			const obj = new this.$.$mol_list();
 			(obj.rows) = () => ([
 				(this?.Note_settings()), 
-				(this?.Notes_field()), 
+				(this?.Shape()), 
+				(this?.Notes_row()), 
 				(this?.Beep_row())
 			]);
 			return obj;
@@ -134,14 +171,19 @@
 	($mol_mem(($.$mol_audio_demo_sequencer.prototype), "notes"));
 	($mol_mem(($.$mol_audio_demo_sequencer.prototype), "note_length"));
 	($mol_mem(($.$mol_audio_demo_sequencer.prototype), "note_off_part"));
+	($mol_mem_key(($.$mol_audio_demo_sequencer.prototype), "Beep"));
 	($mol_mem(($.$mol_audio_demo_sequencer.prototype), "Beep_track"));
 	($mol_mem(($.$mol_audio_demo_sequencer.prototype), "Note_length"));
 	($mol_mem(($.$mol_audio_demo_sequencer.prototype), "Note_length_field"));
 	($mol_mem(($.$mol_audio_demo_sequencer.prototype), "Note_off_part"));
 	($mol_mem(($.$mol_audio_demo_sequencer.prototype), "Note_off_part_field"));
 	($mol_mem(($.$mol_audio_demo_sequencer.prototype), "Note_settings"));
+	($mol_mem(($.$mol_audio_demo_sequencer.prototype), "shape"));
+	($mol_mem(($.$mol_audio_demo_sequencer.prototype), "Shape_select"));
+	($mol_mem(($.$mol_audio_demo_sequencer.prototype), "Shape"));
 	($mol_mem(($.$mol_audio_demo_sequencer.prototype), "Notes"));
 	($mol_mem(($.$mol_audio_demo_sequencer.prototype), "Notes_field"));
+	($mol_mem(($.$mol_audio_demo_sequencer.prototype), "Notes_row"));
 	($mol_mem(($.$mol_audio_demo_sequencer.prototype), "Beep_active_icon"));
 	($mol_mem(($.$mol_audio_demo_sequencer.prototype), "Beep_active"));
 	($mol_mem(($.$mol_audio_demo_sequencer.prototype), "Beep_play"));

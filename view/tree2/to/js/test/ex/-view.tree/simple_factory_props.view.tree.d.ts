@@ -9,24 +9,24 @@ declare namespace $ {
 		some( ): boolean
 	}
 	
-	type $mol_view_tree2_to_js_test_ex_simple_factory_props_bar__some__LLV3TXXL = $mol_type_enforce<
+	type $mol_view_tree2_to_js_test_ex_simple_factory_props_bar__some__4JSDGES6 = $mol_type_enforce<
 		boolean
 		,
 		ReturnType< $mol_view_tree2_to_js_test_ex_simple_factory_props_bar['some'] >
 	>
-	type $mol_view_tree2_to_js_test_ex_simple_factory_props_bar__loc__5MJLHJHD = $mol_type_enforce<
+	type $mol_view_tree2_to_js_test_ex_simple_factory_props_bar__loc__PU4DTH24 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_view_tree2_to_js_test_ex_simple_factory_props_bar['loc'] >
 	>
-	type $mol_view_tree2_to_js_test_ex_simple_factory_props_bar__deep__GTZXCXHA = $mol_type_enforce<
+	type $mol_view_tree2_to_js_test_ex_simple_factory_props_bar__deep__UNNQB6TQ = $mol_type_enforce<
 		({ 
 			'loc': string,
 		}) 
 		,
 		ReturnType< $mol_view_tree2_to_js_test_ex_simple_factory_props_bar['deep'] >
 	>
-	type $mol_view_tree2_to_js_test_ex_simple_factory_props_bar__sub__R8GPAN0B = $mol_type_enforce<
+	type $mol_view_tree2_to_js_test_ex_simple_factory_props_bar__sub__9BWQG1G5 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view_tree2_to_js_test_ex_simple_factory_props_bar['sub'] >
