@@ -1,11 +1,11 @@
 declare namespace $ {
 
-	type $mol_view_tree2_to_js_test_ex_array_union_foo_bar__FJDIX4GE = $mol_type_enforce<
+	type $mol_view_tree2_to_js_test_ex_array_union_foo_bar__U41JB5U7 = $mol_type_enforce<
 		`a`
 		,
 		$mol_view_tree2_to_js_test_ex_klass_tuple_type
 	>
-	type $mol_view_tree2_to_js_test_ex_array_union_foo_bar__5W28N1QM = $mol_type_enforce<
+	type $mol_view_tree2_to_js_test_ex_array_union_foo_bar__14EYJCC1 = $mol_type_enforce<
 		`b`
 		,
 		$mol_view_tree2_to_js_test_ex_klass_tuple_type
